@@ -1,0 +1,177 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Actions\Jetstream\TransferTeamOwnership;
+use App\Domains\LogerProfile\Models\LogerProfile;
+use App\Http\Middleware\GuardGuestAccess;
+use App\Models\Team;
+use App\Models\TeamMemberGrant;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Route as RoutingRoute;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
+use Laravel\Passport\Passport;
+use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
+
+class GuestAccessTest extends TestCase
+{
+    use RefreshDatabase;
+
+    /**
+     * @return array{0: User, 1: User, 2: Team}
+     */
+    private function household(): array
+    {
+        $owner = User::factory()->withPersonalTeam()->create();
+        $team = $owner->ownedTeams()->first();
+        $owner->forceFill(['current_team_id' => $team->id])->save();
+
+        $guest = User::factory()->create();
+        $team->users()->attach($guest, ['role' => TeamMemberGrant::GUEST_ROLE]);
+        $guest->forceFill(['current_team_id' => $team->id])->save();
+
+        return [$owner->fresh(), $guest->fresh(), $team];
+    }
+
+    private function grant(User $guest, Team $team, string $module, string $access, ?int $profileId = null): TeamMemberGrant
+    {
+        return TeamMemberGrant::create([
+            'team_id' => $team->id,
+            'user_id' => $guest->id,
+            'module' => $module,
+            'access' => $access,
+            'profile_id' => $profileId,
+        ]);
+    }
+
+    public function test_a_guest_without_grants_is_denied_every_signed_in_route(): void
+    {
+        [, $guest] = $this->household();
+        $leaks = [];
+        $checked = 0;
+
+        foreach (Route::getRoutes() as $route) {
+            $middleware = $route->gatherMiddleware();
+            $signedIn = collect($middleware)->contains(fn ($m) => is_string($m) && (str_starts_with($m, 'auth') || str_contains($m, 'Authenticate')));
+            if (! $signedIn || $route->named(GuardGuestAccess::ACCOUNT_ROUTES)) {
+                continue;
+            }
+
+            $this->actAs($guest, $middleware);
+            $method = collect($route->methods())->first(fn ($m) => $m !== 'HEAD');
+            $checked++;
+            $status = $this->json($method, $this->fillUri($route), [], ['Accept' => 'application/json, text/event-stream'])->status();
+
+            if ($status !== 403) {
+                $leaks[] = "{$method} /{$route->uri()} → {$status}";
+            }
+        }
+
+        $this->assertGreaterThan(400, $checked);
+        $this->assertSame([], $leaks);
+    }
+
+    public function test_a_guest_keeps_account_self_service_and_owners_are_untouched(): void
+    {
+        [$owner, $guest] = $this->household();
+
+        Sanctum::actingAs($guest, ['*']);
+        $this->getJson('/api/mobile/me')->assertOk();
+        $this->getJson('/api/mobile/notifications')->assertOk();
+        $this->getJson('/api/mobile/calendar')->assertForbidden();
+
+        Sanctum::actingAs($owner, ['*']);
+        $this->getJson('/api/mobile/calendar')->assertOk();
+    }
+
+    public function test_me_reports_the_role_and_the_grants(): void
+    {
+        [$owner, $guest, $team] = $this->household();
+        $dianita = LogerProfile::create(['team_id' => $team->id, 'user_id' => $owner->id, 'name' => 'Dianita']);
+        $this->grant($guest, $team, TeamMemberGrant::MODULE_SHOPPING, TeamMemberGrant::ACCESS_WRITE);
+        $this->grant($guest, $team, TeamMemberGrant::MODULE_CALENDAR, TeamMemberGrant::ACCESS_READ, $dianita->id);
+
+        Sanctum::actingAs($guest, ['*']);
+        $this->getJson('/api/mobile/me')
+            ->assertOk()
+            ->assertJsonPath('role', 'guest')
+            ->assertJsonPath('grants.0.module', 'shopping')
+            ->assertJsonPath('grants.0.access', 'write')
+            ->assertJsonPath('grants.1.module', 'calendar')
+            ->assertJsonPath('grants.1.profile_id', $dianita->id)
+            ->assertJsonPath('grants.1.profile_name', 'Dianita');
+
+        Sanctum::actingAs($owner, ['*']);
+        $this->getJson('/api/mobile/me')->assertJsonPath('role', 'owner')->assertJsonPath('grants', []);
+    }
+
+    public function test_a_declared_module_opens_by_access_level(): void
+    {
+        [$owner, $guest, $team] = $this->household();
+        Route::middleware(['api', 'auth:sanctum', 'guest.module:shopping'])->group(function () {
+            Route::get('/api/__guest-probe', fn () => 'read');
+            Route::post('/api/__guest-probe', fn () => 'write');
+        });
+        Sanctum::actingAs($guest, ['*']);
+
+        $this->getJson('/api/__guest-probe')->assertForbidden();
+
+        $read = $this->grant($guest, $team, TeamMemberGrant::MODULE_SHOPPING, TeamMemberGrant::ACCESS_READ);
+        $this->getJson('/api/__guest-probe')->assertOk();
+        $this->postJson('/api/__guest-probe')->assertForbidden();
+
+        $read->update(['access' => TeamMemberGrant::ACCESS_WRITE]);
+        $this->postJson('/api/__guest-probe')->assertOk();
+
+        $this->grant($guest, $team, TeamMemberGrant::MODULE_CALENDAR, TeamMemberGrant::ACCESS_WRITE);
+        $read->delete();
+        $this->getJson('/api/__guest-probe')->assertForbidden();
+
+        Sanctum::actingAs($owner, ['*']);
+        $this->postJson('/api/__guest-probe')->assertOk();
+    }
+
+    public function test_a_guest_never_inherits_or_receives_the_household(): void
+    {
+        [$owner, $guest, $team] = $this->household();
+        $transfer = app(TransferTeamOwnership::class);
+
+        $this->assertNull($transfer->successorFor($team));
+
+        $this->expectExceptionMessage('A guest cannot own this space.');
+        $transfer->transfer($owner, $team, $guest);
+    }
+
+    private function actAs(User $user, array $middleware): void
+    {
+        if (in_array('auth:api', $middleware, true)) {
+            Passport::actingAs($user, ['*']);
+        } elseif (in_array('auth:sanctum', $middleware, true)) {
+            Sanctum::actingAs($user, ['*']);
+        } else {
+            $this->actingAs($user);
+        }
+    }
+
+    /**
+     * Fill each parameter with a value its `where` constraint accepts, so the request reaches the route.
+     */
+    private function fillUri(RoutingRoute $route): string
+    {
+        $candidates = ['1', '2026-11', '2026-11-01', (string) Str::uuid(), 'a'];
+
+        $uri = preg_replace_callback('/\{(\w+)(\?)?\}/', function (array $match) use ($route, $candidates) {
+            if (($match[2] ?? '') === '?') {
+                return '';
+            }
+            $pattern = $route->wheres[$match[1]] ?? null;
+
+            return collect($candidates)->first(fn ($value) => $pattern === null || preg_match('#^(?:'.$pattern.')$#', $value)) ?? '1';
+        }, $route->uri());
+
+        return '/'.ltrim(preg_replace('#/+#', '/', $uri), '/');
+    }
+}

@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Mobile;
 
 use App\Models\Team;
+use App\Models\TeamMemberGrant;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -29,10 +30,20 @@ class MobileUserResource extends JsonResource
             'language' => $this->language,
             'current_team_id' => $this->current_team_id,
             'current_team' => $this->currentTeam ? ['id' => $this->currentTeam->id, 'name' => $this->currentTeam->name] : null,
+            'role' => $this->currentTeam ? $this->roleIn($this->currentTeam) : null,
+            'grants' => $this->currentTeam && $this->isGuestOf($this->currentTeam)
+                ? $this->grantsIn($this->currentTeam)->map(fn (TeamMemberGrant $grant) => [
+                    'module' => $grant->module,
+                    'access' => $grant->access,
+                    'profile_id' => $grant->profile_id,
+                    'profile_name' => $grant->profile?->name,
+                    'scope_id' => $grant->scope_id,
+                ])->values()
+                : [],
             'teams' => $this->allTeams()->map(fn (Team $team) => [
                 'id' => $team->id,
                 'name' => $team->name,
-                'role' => $team->user_id === $this->id ? 'owner' : $team->membership?->role,
+                'role' => $this->roleIn($team),
             ])->values(),
             'two_factor_enabled' => $this->hasEnabledTwoFactorAuthentication(),
             'two_factor_confirmed' => filled($this->two_factor_secret) && $this->two_factor_confirmed_at !== null,

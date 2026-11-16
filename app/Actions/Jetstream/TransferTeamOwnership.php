@@ -3,6 +3,7 @@
 namespace App\Actions\Jetstream;
 
 use App\Models\Team;
+use App\Models\TeamMemberGrant;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -23,16 +24,23 @@ class TransferTeamOwnership
             ])->errorBag('transferTeamOwnership');
         }
 
+        if ($newOwner->isGuestOf($team)) {
+            throw ValidationException::withMessages([
+                'user_id' => [__('A guest cannot own this space.')],
+            ])->errorBag('transferTeamOwnership');
+        }
+
         $this->handOver($team, $newOwner, $user);
     }
 
     /**
      * The member who takes over a shared team when its owner deletes the account:
-     * the longest-standing admin, otherwise the longest-standing member.
+     * the longest-standing admin, otherwise the longest-standing member. Never a guest.
      */
     public function successorFor(Team $team): ?User
     {
         return $team->users()
+            ->where('team_user.role', '!=', TeamMemberGrant::GUEST_ROLE)
             ->orderByRaw("CASE WHEN team_user.role = 'admin' THEN 0 ELSE 1 END")
             ->orderBy('team_user.created_at')
             ->orderBy('team_user.id')

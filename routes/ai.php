@@ -3,6 +3,7 @@
 use App\Http\Controllers\Mcp\McpOAuthApproveController;
 use App\Http\Controllers\Mcp\McpOAuthMetadataController;
 use App\Http\Controllers\Mcp\McpOAuthRegisterController;
+use App\Http\Middleware\GuardGuestAccess;
 use App\Mcp\Servers\LogerServer;
 use Illuminate\Support\Facades\Route;
 use Laravel\Mcp\Facades\Mcp;
@@ -10,7 +11,7 @@ use Laravel\Mcp\Facades\Mcp;
 // Remote MCP server for Claude Code. Clients connect with OAuth (Passport):
 // they register themselves, the user approves them on /oauth/authorize.
 Mcp::web('/mcp', LogerServer::class)
-    ->middleware(['auth:api', 'atmosphere.teamed', 'throttle:60,1'])
+    ->middleware(['auth:api', 'atmosphere.teamed', GuardGuestAccess::class, 'throttle:60,1'])
     ->name('mcp.loger');
 
 // Same route names as Mcp::oauthRoutes() so its WWW-Authenticate header points here.
