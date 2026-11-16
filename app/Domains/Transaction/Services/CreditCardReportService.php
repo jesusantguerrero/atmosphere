@@ -5,7 +5,7 @@ namespace App\Domains\Transaction\Services;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Transaction\Models\BillingCycle;
-use App\Models\User;
+use App\Models\Team;
 use App\Notifications\BillingCycleCutAlert;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -332,7 +332,7 @@ class CreditCardReportService
                 if ($billingCycle->wasRecentlyCreated
                     && ! in_array($billingCycle->status, [BillingCycle::STATUS_PAID, BillingCycle::STATUS_CANCELLED], true)
                     && Carbon::parse($creditCardAccount->until)->lte(now())) {
-                    $teamUser = User::where('current_team_id', $teamId)->first();
+                    $teamUser = Team::find($teamId)?->owner;
                     if ($teamUser) {
                         $teamUser->notify(new BillingCycleCutAlert(
                             $billingCycle,

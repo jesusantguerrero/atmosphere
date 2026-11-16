@@ -3,11 +3,13 @@
 namespace App\Http;
 
 use App\Http\Middleware\AdminOnly;
+use App\Http\Middleware\AllowsGuestModule;
 use App\Http\Middleware\AppMenu;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\EnsureCoreModulePermissions;
 use App\Http\Middleware\FeatureFlag;
+use App\Http\Middleware\GuardGuestAccess;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RedirectIfAuthenticated;
@@ -21,14 +23,18 @@ use Illuminate\Auth\Middleware\AuthenticateWithBasicAuth;
 use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Auth\Middleware\RequirePassword;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
+use Illuminate\Contracts\Session\Middleware\AuthenticatesSessions;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
+use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Foundation\Http\Middleware\ValidatePostSize;
 use Illuminate\Http\Middleware\HandleCors;
 use Illuminate\Http\Middleware\SetCacheHeaders;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Routing\Middleware\ThrottleRequestsWithRedis;
 use Illuminate\Routing\Middleware\ValidateSignature;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
@@ -72,12 +78,35 @@ class Kernel extends HttpKernel
             AppMenu::class,
             SetUserLocale::class,
             HandleInertiaRequests::class,
+            GuardGuestAccess::class,
         ],
 
         'api' => [
             ThrottleRequests::class.':api',
             SubstituteBindings::class,
+            GuardGuestAccess::class,
         ],
+    ];
+
+    /**
+     * Laravel's order, with the guest guard right after authentication so a guest is
+     * turned away before route model binding runs.
+     *
+     * @var array<int, class-string>
+     */
+    protected $middlewarePriority = [
+        HandlePrecognitiveRequests::class,
+        \Illuminate\Cookie\Middleware\EncryptCookies::class,
+        AddQueuedCookiesToResponse::class,
+        StartSession::class,
+        ShareErrorsFromSession::class,
+        AuthenticatesRequests::class,
+        GuardGuestAccess::class,
+        ThrottleRequests::class,
+        ThrottleRequestsWithRedis::class,
+        AuthenticatesSessions::class,
+        SubstituteBindings::class,
+        Authorize::class,
     ];
 
     /**
@@ -104,5 +133,6 @@ class Kernel extends HttpKernel
         'loger.concerns' => EnsureCoreModulePermissions::class,
         'admin.only' => AdminOnly::class,
         'feature' => FeatureFlag::class,
+        'guest.module' => AllowsGuestModule::class,
     ];
 }

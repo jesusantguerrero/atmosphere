@@ -1180,5 +1180,9 @@
     "Preparing your data…": "Preparing your data…",
     "We are preparing your data. You will get an email with the download link.": "We are preparing your data. You will get an email with the download link.",
     "Your data export is ready. The link works for :days days.": "Your data export is ready. The link works for :days days.",
-    "Data export ready": "Data export ready"
+    "Data export ready": "Data export ready",
+    "Guest": "Guest",
+    "Guests only see what an administrator shares with them, such as the shopping list or one profile calendar.": "Guests only see what an administrator shares with them, such as the shopping list or one profile calendar.",
+    "This has not been shared with you.": "This has not been shared with you.",
+    "A guest cannot own this space.": "A guest cannot own this space."
 }

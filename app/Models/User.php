@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -117,6 +118,40 @@ class User extends Authenticatable implements MustVerifyEmail
     public function oauthTokens(): HasMany
     {
         return $this->hasMany(Token::class, 'user_id');
+    }
+
+    public function memberGrants(): HasMany
+    {
+        return $this->hasMany(TeamMemberGrant::class);
+    }
+
+    /**
+     * Guests see nothing in the household beyond what a grant opens.
+     */
+    public function isGuestOf(?Team $team): bool
+    {
+        return $team !== null && $this->roleIn($team) === TeamMemberGrant::GUEST_ROLE;
+    }
+
+    /**
+     * @return Collection<int, TeamMemberGrant>
+     */
+    public function grantsIn(Team $team): Collection
+    {
+        return $this->memberGrants()->where('team_id', $team->id)->with('profile:id,name')->get();
+    }
+
+    /**
+     * owner, admin, editor or guest.
+     */
+    public function roleIn(Team $team): ?string
+    {
+        return $this->ownsTeam($team) ? 'owner' : $team->users()->whereKey($this->id)->first()?->membership?->role;
+    }
+
+    public function hasModuleGrant(Team $team, string $module, string $access = TeamMemberGrant::ACCESS_READ): bool
+    {
+        return $this->grantsIn($team)->contains(fn (TeamMemberGrant $grant) => $grant->module === $module && $grant->allows($access));
     }
 
     public function sendLoginLink()
