@@ -138,7 +138,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function grantsIn(Team $team): Collection
     {
-        return $this->memberGrants()->where('team_id', $team->id)->with('profile:id,name')->get();
+        return $this->memberGrants()->where('team_id', $team->id)->with('profile')->orderBy('id')->get();
     }
 
     /**
@@ -149,9 +149,25 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->ownsTeam($team) ? 'owner' : $team->users()->whereKey($this->id)->first()?->membership?->role;
     }
 
-    public function hasModuleGrant(Team $team, string $module, string $access = TeamMemberGrant::ACCESS_READ): bool
+    /**
+     * Profiles of the team this guest may see (read) or work on (write).
+     *
+     * @return array<int, int>
+     */
+    public function grantedProfileIds(Team $team, string $access = TeamMemberGrant::ACCESS_READ): array
     {
-        return $this->grantsIn($team)->contains(fn (TeamMemberGrant $grant) => $grant->module === $module && $grant->allows($access));
+        return $this->grantsIn($team)->filter(fn (TeamMemberGrant $grant) => $grant->allows($access))
+            ->pluck('loger_profile_id')->map(fn ($id) => (int) $id)->values()->all();
+    }
+
+    /**
+     * Without a profile, any grant at that access level counts.
+     */
+    public function hasProfileGrant(Team $team, ?int $profileId, string $access = TeamMemberGrant::ACCESS_READ): bool
+    {
+        $granted = $this->grantedProfileIds($team, $access);
+
+        return $profileId === null ? $granted !== [] : in_array($profileId, $granted, true);
     }
 
     public function sendLoginLink()

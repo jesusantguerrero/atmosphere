@@ -10,8 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Deny by default for guest members: on any signed-in route a guest only gets through
- * account self-service and routes that declare a module (`guest.module:shopping`) they
- * hold a grant for. Reads need a read grant; anything else needs write.
+ * account self-service and routes marked `guest.profile` for a profile they were granted.
+ * Reads need a read grant; anything else needs write.
  */
 class GuardGuestAccess
 {
@@ -65,10 +65,14 @@ class GuardGuestAccess
             return $next($request);
         }
 
-        $module = $this->declaredModule($route);
         $access = $request->isMethodSafe() ? TeamMemberGrant::ACCESS_READ : TeamMemberGrant::ACCESS_WRITE;
+        $profileId = $route->parameter('profileId');
 
-        abort_unless($module && $user->hasModuleGrant($team, $module, $access), 403, __('This has not been shared with you.'));
+        abort_unless(
+            $this->opensToGuests($route) && $user->hasProfileGrant($team, $profileId === null ? null : (int) $profileId, $access),
+            403,
+            __('This has not been shared with you.')
+        );
 
         return $next($request);
     }
@@ -80,14 +84,8 @@ class GuardGuestAccess
         );
     }
 
-    private function declaredModule(Route $route): ?string
+    private function opensToGuests(Route $route): bool
     {
-        foreach ($route->gatherMiddleware() as $middleware) {
-            if (is_string($middleware) && str_starts_with($middleware, 'guest.module:')) {
-                return substr($middleware, strlen('guest.module:'));
-            }
-        }
-
-        return null;
+        return in_array('guest.profile', $route->gatherMiddleware(), true);
     }
 }

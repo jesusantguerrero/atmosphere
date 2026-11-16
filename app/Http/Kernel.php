@@ -3,7 +3,7 @@
 namespace App\Http;
 
 use App\Http\Middleware\AdminOnly;
-use App\Http\Middleware\AllowsGuestModule;
+use App\Http\Middleware\AllowsGuestProfile;
 use App\Http\Middleware\AppMenu;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\EncryptCookies;
@@ -133,6 +133,6 @@ class Kernel extends HttpKernel
         'loger.concerns' => EnsureCoreModulePermissions::class,
         'admin.only' => AdminOnly::class,
         'feature' => FeatureFlag::class,
-        'guest.module' => AllowsGuestModule::class,
+        'guest.profile' => AllowsGuestProfile::class,
     ];
 }
