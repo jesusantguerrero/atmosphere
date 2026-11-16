@@ -7,20 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * One thing a guest member may use in a household, e.g. the shopping list (write) or one
- * profile's calendar (read). Guests are denied everything else.
+ * One profile a guest member may see (read) or also work on (write) in a household, e.g.
+ * the kid's profile. Guests are denied everything not linked to a granted profile.
  */
 class TeamMemberGrant extends Model
 {
     const GUEST_ROLE = 'guest';
-
-    const MODULE_SHOPPING = 'shopping';
-
-    const MODULE_CALENDAR = 'calendar';
-
-    const MODULE_BUDGET = 'budget';
-
-    const MODULES = [self::MODULE_SHOPPING, self::MODULE_CALENDAR, self::MODULE_BUDGET];
 
     const ACCESS_READ = 'read';
 
@@ -29,15 +21,13 @@ class TeamMemberGrant extends Model
     protected $fillable = [
         'team_id',
         'user_id',
-        'module',
-        'profile_id',
-        'scope_id',
+        'loger_profile_id',
         'access',
     ];
 
     public function profile(): BelongsTo
     {
-        return $this->belongsTo(LogerProfile::class, 'profile_id');
+        return $this->belongsTo(LogerProfile::class, 'loger_profile_id');
     }
 
     public function allows(string $access): bool
