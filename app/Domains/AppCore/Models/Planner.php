@@ -4,6 +4,7 @@ namespace App\Domains\AppCore\Models;
 
 use App\Concerns\SupportsDateFrame;
 use App\Domains\Automation\Services\LogerAutomationService;
+use App\Domains\LogerProfile\Services\GuestAlertService;
 use App\Events\AutomationEvent;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -72,8 +73,12 @@ class Planner extends Model
                 AutomationEvent::dispatch($updatedModel->team_id, LogerAutomationService::MEAL_PLAN_LIKED, $updatedModel->toArray());
             }
 
+            app(GuestAlertService::class)->plannerUpdated($updatedModel);
+
             return $updatedModel;
         });
+
+        static::deleting(fn (Planner $planner) => app(GuestAlertService::class)->plannerDeleting($planner));
     }
 
     public function dateable()

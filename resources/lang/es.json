@@ -1553,5 +1553,19 @@
     "Guest": "Invitado",
     "Guests only see what an administrator shares with them, such as the shopping list or one profile calendar.": "Los invitados solo ven lo que un administrador les comparte, como la lista de compras o el calendario de un perfil.",
     "This has not been shared with you.": "Esto no se ha compartido contigo.",
-    "A guest cannot own this space.": "Un invitado no puede ser dueño de este espacio."
+    "A guest cannot own this space.": "Un invitado no puede ser dueño de este espacio.",
+    "New on :profile's calendar: :name, :date.": "Nuevo en el calendario de :profile: :name, :date.",
+    "Changed on :profile's calendar: :name, :date.": "Cambió en el calendario de :profile: :name, :date.",
+    "Cancelled on :profile's calendar: :name, :date.": "Se canceló en el calendario de :profile: :name, :date.",
+    "Removed from :profile's calendar: :name, :date.": "Se quitó del calendario de :profile: :name, :date.",
+    "View calendar": "Ver calendario",
+    ":count event(s) this week for :profiles.": ":count evento(s) esta semana para :profiles.",
+    "Later this month:": "Más adelante este mes:",
+    ":count new on «:list»: :items": ":count nuevo(s) en «:list»: :items",
+    "and :count more": "y :count más",
+    "View shopping list": "Ver lista de compra",
+    "and": "y",
+    "Weekly summary of your profiles": "Resumen semanal de tus perfiles",
+    "Calendar changes this week": "Cambios del calendario esta semana",
+    "New items on your shopping lists": "Cosas nuevas en tus listas de compra"
 }

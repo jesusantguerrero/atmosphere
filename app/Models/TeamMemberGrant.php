@@ -30,6 +30,11 @@ class TeamMemberGrant extends Model
         return $this->belongsTo(LogerProfile::class, 'loger_profile_id');
     }
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function allows(string $access): bool
     {
         return $access === self::ACCESS_READ || $this->access === self::ACCESS_WRITE;

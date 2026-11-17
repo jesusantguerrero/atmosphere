@@ -34,6 +34,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('bg:planned-reminders')->daily()->withoutOverlapping()->runInBackground();
         // Sunday evening: what the coming week holds (planner events + payments due).
         $schedule->command('loger:weekly-digest')->weeklyOn(0, '19:00')->runInBackground();
+        $schedule->command('loger:guest-shopping-digest')->everyTenMinutes()->withoutOverlapping()->runInBackground();
         $schedule->command('loger:prune-data-exports')->dailyAt('03:30')->runInBackground();
         $schedule->command('watchlists:check-thresholds')->daily()->runInBackground();
         $schedule->command('watchlists:check-streaks')->dailyAt('06:30')->runInBackground();
