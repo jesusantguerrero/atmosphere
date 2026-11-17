@@ -8,6 +8,7 @@ use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Housing\Models\Occurrence;
+use App\Domains\LogerProfile\Services\ProfileWorkspaceService;
 use App\Domains\Meal\Services\MealService;
 use App\Domains\Transaction\Models\BillingCycle;
 use App\Domains\Transaction\Services\TransactionService;
@@ -355,14 +356,17 @@ class TodayService
                 ];
             });
 
-        $plannerUpcoming = Planner::query()
+        $planners = Planner::query()
             ->where('team_id', $teamId)
             ->whereNotNull('name')
             ->whereDate('date', '>', $today->format('Y-m-d'))
             ->whereDate('date', '<=', $plannerWindowEnd->format('Y-m-d'))
             ->whereNull('completed_at')
             ->orderBy('date')
-            ->get()
+            ->get();
+        $profiles = app(ProfileWorkspaceService::class)->eventProfiles($teamId, $planners->modelKeys());
+
+        $plannerUpcoming = $planners
             ->map(fn ($p) => [
                 'kind' => 'planner',
                 'id' => 'planner-up-'.$p->id,
@@ -373,6 +377,7 @@ class TodayService
                 'days_until' => (int) $today->copy()->startOfDay()->diffInDays($p->date->copy()->startOfDay(), false),
                 'source' => $p->source,
                 'notes' => $p->notes,
+                ...ProfileWorkspaceService::eventProfileFields($profiles->get($p->id)),
             ]);
 
         return $cycles

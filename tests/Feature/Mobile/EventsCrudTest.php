@@ -4,6 +4,7 @@ namespace Tests\Feature\Mobile;
 
 use App\Domains\AppCore\Models\Planner;
 use App\Domains\LogerProfile\Models\LogerProfile;
+use App\Domains\LogerProfile\Services\ProfileWorkspaceService;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -122,15 +123,22 @@ class EventsCrudTest extends TestCase
         $school = $this->postJson('/api/mobile/events', ['name' => 'Disfraz de planeta', 'date' => $date, 'profile_id' => $dianita->id])
             ->assertCreated()
             ->assertJsonPath('data.profile_id', $dianita->id)
-            ->assertJsonPath('data.profile_name', 'Dianita');
+            ->assertJsonPath('data.profile_name', 'Dianita')
+            ->assertJsonPath('data.profile_color', $dianita->color);
 
         $month = now()->format('Y-m');
         $all = collect($this->getJson("/api/mobile/calendar?month={$month}")->assertOk()->json('events'))->keyBy('planner_id');
         $this->assertSame('Dianita', $all[$school->json('data.id')]['profile_name']);
         $this->assertNull($all[$household->id]['profile_id']);
+        $this->assertArrayHasKey('profile_color', $all[$household->id]);
 
         $only = $this->getJson("/api/mobile/calendar?month={$month}&profile_id={$dianita->id}")->assertOk()->json('events');
         $this->assertSame([$school->json('data.id')], array_column($only, 'planner_id'));
+
+        $house = $this->profile($user, 'Casa');
+        $chore = $this->postJson('/api/mobile/events', ['name' => 'Fumigar', 'date' => $date, 'profile_id' => $house->id])->assertCreated();
+        $both = $this->getJson("/api/mobile/calendar?month={$month}&profile_id[]={$dianita->id}&profile_id[]={$house->id}")->assertOk()->json('events');
+        $this->assertEqualsCanonicalizing([$school->json('data.id'), $chore->json('data.id')], array_column($both, 'planner_id'));
     }
 
     public function test_an_event_profile_can_be_changed_and_cleared(): void
@@ -142,15 +150,20 @@ class EventsCrudTest extends TestCase
         $this->patchJson("/api/mobile/events/{$event->id}", ['profile_id' => $dianita->id])
             ->assertOk()
             ->assertJsonPath('event.profile_name', 'Dianita');
-        $this->assertSame($dianita->id, $event->fresh()->loger_profile_id);
+        $this->assertSame($dianita->id, $this->eventProfileId($event));
 
         $this->patchJson("/api/mobile/events/{$event->id}", ['name' => 'Renamed'])->assertOk();
-        $this->assertSame($dianita->id, $event->fresh()->loger_profile_id);
+        $this->assertSame($dianita->id, $this->eventProfileId($event));
+
+        $house = $this->profile($user, 'Casa');
+        $this->patchJson("/api/mobile/events/{$event->id}", ['profile_id' => $house->id])->assertOk()->assertJsonPath('event.profile_id', $house->id);
+        $this->assertDatabaseCount('loger_profile_entities', 1);
 
         $this->patchJson("/api/mobile/events/{$event->id}", ['profile_id' => null])
             ->assertOk()
             ->assertJsonPath('event.profile_id', null);
-        $this->assertNull($event->fresh()->loger_profile_id);
+        $this->assertNull($this->eventProfileId($event));
+        $this->assertDatabaseCount('loger_profile_entities', 0);
     }
 
     public function test_a_profile_from_another_household_is_rejected(): void
@@ -172,6 +185,11 @@ class EventsCrudTest extends TestCase
     }
 
     // ── Helpers ──────────────────────────────────────────────────────
+
+    private function eventProfileId(Planner $event): ?int
+    {
+        return app(ProfileWorkspaceService::class)->eventProfiles($event->team_id, [$event->id])->get($event->id)?->id;
+    }
 
     private function profile(User $user, string $name): LogerProfile
     {

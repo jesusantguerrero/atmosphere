@@ -128,7 +128,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocal
     Route::get('/budget/categories/{category}/movements', [MobileController::class, 'categoryMovements'])->name('budget.categories.movements');
     Route::delete('/budget/movements/{movement}', [MobileController::class, 'destroyMovement'])->name('budget.movements.destroy');
 
-    Route::get('/calendar', [MobileController::class, 'calendar'])->name('calendar');
+    Route::get('/calendar', [MobileController::class, 'calendar'])->middleware('guest.profile')->name('calendar');
     Route::get('/routine', [MobileController::class, 'routine'])->name('routine');
     Route::post('/routine/{plan}/blocks', [RoutineController::class, 'storeBlock'])->name('routine.blocks.store');
     Route::put('/routine/{plan}/blocks/{item}', [RoutineController::class, 'updateBlock'])->name('routine.blocks.update');
@@ -167,13 +167,13 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocal
     Route::put('/reconciliations/{reconciliation}/adjustment', [MobileController::class, 'saveReconciliationAdjustment'])->name('reconciliation.adjustment');
     Route::delete('/reconciliations/{reconciliation}', [MobileController::class, 'deleteReconciliation'])->name('reconciliation.destroy');
 
-    Route::post('/events', [MobileController::class, 'storeEvent'])->name('events.store');
-    Route::patch('/events/{planner}', [MobileController::class, 'updateEvent'])->name('events.update');
+    Route::post('/events', [MobileController::class, 'storeEvent'])->middleware('guest.profile')->name('events.store');
+    Route::patch('/events/{planner}', [MobileController::class, 'updateEvent'])->middleware('guest.profile')->name('events.update');
     Route::delete('/events/{planner}', [MobileController::class, 'deleteEvent'])->name('events.destroy');
-    Route::patch('/events/{planner}/complete', [MobileController::class, 'completeEvent'])->name('events.complete');
-    Route::patch('/events/{planner}/cancel', [MobileController::class, 'cancelEvent'])->name('events.cancel');
-    Route::patch('/events/{planner}/reopen', [MobileController::class, 'reopenEvent'])->name('events.reopen');
-    Route::post('/tasks', [MobileController::class, 'storeTask'])->name('tasks.store');
+    Route::patch('/events/{planner}/complete', [MobileController::class, 'completeEvent'])->middleware('guest.profile')->name('events.complete');
+    Route::patch('/events/{planner}/cancel', [MobileController::class, 'cancelEvent'])->middleware('guest.profile')->name('events.cancel');
+    Route::patch('/events/{planner}/reopen', [MobileController::class, 'reopenEvent'])->middleware('guest.profile')->name('events.reopen');
+    Route::post('/tasks', [MobileController::class, 'storeTask'])->middleware('guest.profile')->name('tasks.store');
     Route::post('/transfers', [MobileController::class, 'transfer'])->name('transfers.store');
 
     // Chores (household tasks)

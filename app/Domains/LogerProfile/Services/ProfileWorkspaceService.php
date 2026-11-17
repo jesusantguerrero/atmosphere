@@ -3,12 +3,14 @@
 namespace App\Domains\LogerProfile\Services;
 
 use App\Domains\AppCore\Models\Category;
+use App\Domains\AppCore\Models\Planner;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Housing\Models\Occurrence;
 use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Domains\LogerProfile\Models\LogerProfileEntity;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Models\TransactionLine;
+use App\Models\Account;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -20,7 +22,15 @@ use Modules\Plan\Entities\PlanTypes;
 
 class ProfileWorkspaceService
 {
+    /**
+     * What the web link picker offers (and saveLinks replaces).
+     */
     public const TYPES = ['category' => Category::class, 'plan' => Plan::class, 'occurrence' => Occurrence::class, 'task' => PlanItem::class];
+
+    /**
+     * Everything a profile can be linked to; agenda events are linked from the calendar.
+     */
+    public const ENTITY_TYPES = [...self::TYPES, 'schedule' => Planner::class, 'account' => Account::class];
 
     public const VIEWS = ['notebook' => 1, 'kanban' => 2, 'list' => 3];
 
@@ -77,6 +87,58 @@ class ProfileWorkspaceService
             ->pluck('profile_id')->map(fn ($id) => (int) $id)->unique()->values()->all();
     }
 
+    /**
+     * The profile each agenda event belongs to (the first linked one), keyed by planner id.
+     *
+     * @param  iterable<int>  $plannerIds
+     * @return Collection<int, LogerProfile>
+     */
+    public function eventProfiles(int $teamId, iterable $plannerIds): Collection
+    {
+        $links = LogerProfileEntity::query()->without('entity')->where('team_id', $teamId)
+            ->where('entity_type', Planner::class)->whereIn('entity_id', collect($plannerIds)->all())
+            ->orderBy('profile_id')->get()->unique('entity_id');
+        $profiles = LogerProfile::query()->where('team_id', $teamId)->whereIn('id', $links->pluck('profile_id'))->get()->keyBy('id');
+
+        return $links->mapWithKeys(fn ($link) => [(int) $link->entity_id => $profiles->get($link->profile_id)])->filter();
+    }
+
+    /**
+     * Ids of the agenda events linked to any of these profiles.
+     *
+     * @param  array<int, int>  $profileIds
+     * @return array<int, int>
+     */
+    public function eventIdsFor(int $teamId, array $profileIds): array
+    {
+        return LogerProfileEntity::query()->without('entity')->where('team_id', $teamId)
+            ->where('entity_type', Planner::class)->whereIn('profile_id', $profileIds)
+            ->pluck('entity_id')->map(fn ($id) => (int) $id)->unique()->values()->all();
+    }
+
+    /**
+     * An event belongs to one profile at most: this replaces its agenda link.
+     */
+    public function setEventProfile(Planner $planner, ?int $profileId): void
+    {
+        $planner->getConnection()->transaction(function () use ($planner, $profileId): void {
+            LogerProfileEntity::query()->without('entity')->where('team_id', $planner->team_id)
+                ->where('entity_type', Planner::class)->where('entity_id', $planner->id)
+                ->when($profileId, fn ($query) => $query->where('profile_id', '!=', $profileId))->delete();
+            if ($profileId) {
+                $this->link(LogerProfile::query()->where('team_id', $planner->team_id)->findOrFail($profileId), $planner, 'schedule');
+            }
+        });
+    }
+
+    /**
+     * @return array{profile_id: ?int, profile_name: ?string, profile_color: ?string}
+     */
+    public static function eventProfileFields(?LogerProfile $profile): array
+    {
+        return ['profile_id' => $profile?->id, 'profile_name' => $profile?->name, 'profile_color' => $profile?->color];
+    }
+
     public function links(LogerProfile $profile): Collection
     {
         return LogerProfileEntity::query()->without('entity')->where('team_id', $profile->team_id)->where('profile_id', $profile->id)->get();
@@ -87,8 +149,8 @@ class ProfileWorkspaceService
         abort_unless((int) $entity->team_id === (int) $profile->team_id, 404);
         LogerProfileEntity::query()->without('entity')->firstOrCreate([
             'team_id' => $profile->team_id, 'profile_id' => $profile->id,
-            'entity_type' => self::TYPES[$type], 'entity_id' => $entity->id,
-        ], ['user_id' => $profile->user_id, 'name' => $entity->name ?? $entity->title]);
+            'entity_type' => self::ENTITY_TYPES[$type], 'entity_id' => $entity->id,
+        ], ['user_id' => $profile->user_id, 'name' => $entity->name ?? $entity->title ?? '']);
     }
 
     public function linked(LogerProfile $profile, string $type, int $id): Model

@@ -4,12 +4,10 @@ namespace App\Domains\AppCore\Models;
 
 use App\Concerns\SupportsDateFrame;
 use App\Domains\Automation\Services\LogerAutomationService;
-use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Events\AutomationEvent;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Laravel\Jetstream\HasTeams;
 
 class Planner extends Model
@@ -33,7 +31,6 @@ class Planner extends Model
     protected $fillable = [
         'team_id',
         'user_id',
-        'loger_profile_id',
         'dateable_id',
         'dateable_type',
         'name',
@@ -82,11 +79,6 @@ class Planner extends Model
     public function dateable()
     {
         return $this->morphTo('dateable');
-    }
-
-    public function profile(): BelongsTo
-    {
-        return $this->belongsTo(LogerProfile::class, 'loger_profile_id');
     }
 
     public function completedBy()

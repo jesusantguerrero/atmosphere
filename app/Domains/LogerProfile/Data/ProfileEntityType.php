@@ -3,6 +3,7 @@
 namespace App\Domains\LogerProfile\Data;
 
 use App\Domains\AppCore\Models\Category;
+use App\Domains\AppCore\Models\Planner;
 use App\Domains\Housing\Models\Occurrence;
 use App\Models\Account;
 use Exception;
