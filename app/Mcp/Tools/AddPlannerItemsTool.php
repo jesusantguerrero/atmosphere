@@ -55,7 +55,7 @@ class AddPlannerItemsTool extends Tool
                 'name' => $planner->name,
                 'total' => $planner->total === null ? null : round((float) $planner->total, 2),
                 'notes' => $planner->notes,
-                'profile_id' => $planner->loger_profile_id,
+                'profile_id' => $validated['profile_id'] ?? null,
             ])->values(),
         ]);
     }

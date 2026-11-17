@@ -5,6 +5,7 @@ namespace Tests\Feature\Mcp;
 use App\Domains\AppCore\Models\Planner;
 use App\Domains\Journal\Actions\AccountDetailTypesCreate;
 use App\Domains\LogerProfile\Models\LogerProfile;
+use App\Domains\LogerProfile\Services\ProfileWorkspaceService;
 use App\Domains\Transaction\Models\Transaction;
 use App\Mcp\Servers\LogerServer;
 use App\Mcp\Tools\AddPlannerItemsTool;
@@ -112,7 +113,8 @@ class McpImportToolsTest extends TestCase
             'items' => [['date' => '2026-11-12', 'name' => 'Intruso']],
         ])->assertHasErrors(['That profile is not part of this household.']);
 
-        $this->assertSame([$dianita->id], Planner::query()->pluck('loger_profile_id')->all());
+        $planner = Planner::query()->sole();
+        $this->assertSame($dianita->id, app(ProfileWorkspaceService::class)->eventProfiles($planner->team_id, [$planner->id])->get($planner->id)?->id);
     }
 
     public function test_import_bank_statement_creates_drafts_and_skips_them_the_second_time(): void

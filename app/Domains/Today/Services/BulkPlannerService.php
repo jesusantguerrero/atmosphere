@@ -3,6 +3,7 @@
 namespace App\Domains\Today\Services;
 
 use App\Domains\AppCore\Models\Planner;
+use App\Domains\LogerProfile\Services\ProfileWorkspaceService;
 use Illuminate\Support\Collection;
 
 /**
@@ -12,16 +13,17 @@ use Illuminate\Support\Collection;
  */
 class BulkPlannerService
 {
+    public function __construct(private ProfileWorkspaceService $workspace) {}
+
     /**
      * @param  array<int, array{date: string, end_date?: ?string, name: string, notes?: ?string, total?: ?float}>  $items
      * @return Collection<int, Planner>
      */
     public function createMany(int $teamId, int $userId, array $items, ?string $source = null, ?int $profileId = null): Collection
     {
-        return collect($items)->map(fn (array $item) => Planner::create([
+        return collect($items)->map(fn (array $item) => tap(Planner::create([
             'team_id' => $teamId,
             'user_id' => $userId,
-            'loger_profile_id' => $profileId,
             'name' => $item['name'],
             'notes' => $item['notes'] ?? null,
             'total' => $item['total'] ?? null,
@@ -30,6 +32,6 @@ class BulkPlannerService
             'end_date' => $item['end_date'] ?? $item['date'],
             'frequency' => 'DAILY',
             'status' => Planner::STATUS_PENDING,
-        ]));
+        ]), fn (Planner $planner) => $this->workspace->setEventProfile($planner, $profileId)));
     }
 }

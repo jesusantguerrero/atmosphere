@@ -22,6 +22,7 @@ use App\Domains\Journal\Actions\AccountUpdate;
 use App\Domains\Journal\Actions\TransactionDelete;
 use App\Domains\Journal\Actions\TransactionUpdate;
 use App\Domains\LogerProfile\Models\LogerProfile;
+use App\Domains\LogerProfile\Services\ProfileWorkspaceService;
 use App\Domains\Meal\Models\Meal;
 use App\Domains\Meal\Models\MealPlan;
 use App\Domains\Meal\Models\MealType;
@@ -47,6 +48,7 @@ use App\Http\Resources\PlannedMealResource;
 use App\Models\Account;
 use App\Models\Setting;
 use App\Models\Team;
+use App\Models\TeamMemberGrant;
 use App\Models\User;
 use App\Services\ShoppingListReviewService;
 use App\Services\ShoppingVisitLinker;
@@ -1200,15 +1202,24 @@ class MobileController extends Controller
 
     /**
      * Calendar events for a given month — planner items, billing cycles,
-     * and recurring occurrences merged into one timeline. `profile_id` narrows it to one profile's events.
+     * and recurring occurrences merged into one timeline. `profile_id` (one id or a list) narrows it to
+     * those profiles' events; a guest always gets only her granted profiles' events.
      */
     public function calendar(Request $request, CalendarService $calendarService): JsonResponse
     {
         $teamId = $request->user()->current_team_id;
         $request->validate([
             'month' => 'nullable|date_format:Y-m',
-            'profile_id' => ['nullable', 'integer', $this->teamProfileRule($teamId)],
+            'profile_id' => is_array($request->input('profile_id')) ? ['array'] : ['nullable', 'integer', $this->teamProfileRule($teamId)],
+            'profile_id.*' => ['integer', $this->teamProfileRule($teamId)],
         ]);
+
+        $profileIds = array_map('intval', Arr::wrap($request->input('profile_id')));
+        $granted = $this->guestProfileIds($request, TeamMemberGrant::ACCESS_READ);
+        if ($granted !== null) {
+            abort_if(array_diff($profileIds, $granted) !== [], 403, __('This has not been shared with you.'));
+            $profileIds = $profileIds ?: $granted;
+        }
 
         $monthStr = $request->query('month') ?? now()->format('Y-m');
         $start = Carbon::parse($monthStr.'-01')->startOfMonth()->format('Y-m-d');
@@ -1216,15 +1227,20 @@ class MobileController extends Controller
 
         return response()->json([
             'month' => $monthStr,
-            'events' => $calendarService->getEvents($teamId, $start, $end, $request->integer('profile_id') ?: null),
+            'events' => $calendarService->getEvents($teamId, $start, $end, $profileIds ?: null),
         ]);
     }
 
     /**
      * Create a planner item (task / event) from the mobile FAB.
      */
-    public function storeEvent(Request $request): JsonResponse
+    public function storeEvent(Request $request, ProfileWorkspaceService $workspace): JsonResponse
     {
+        $writable = $this->guestProfileIds($request, TeamMemberGrant::ACCESS_WRITE);
+        if ($writable !== null && ! $request->filled('profile_id') && count($writable) === 1) {
+            $request->merge(['profile_id' => $writable[0]]);
+        }
+
         $validated = $request->validate([
             'profile_id' => ['nullable', 'integer', $this->teamProfileRule($request->user()->current_team_id)],
             'name' => ['required', 'string', 'max:255'],
@@ -1235,6 +1251,7 @@ class MobileController extends Controller
             'source' => ['nullable', 'string', 'max:100'],
             'kind' => ['nullable', Rule::in([Planner::KIND_EVENT, Planner::KIND_TASK])],
         ]);
+        $this->ensureGuestWritesProfile($writable, $validated['profile_id'] ?? null);
 
         $user = $request->user();
 
@@ -1249,8 +1266,8 @@ class MobileController extends Controller
             'source' => $validated['source'] ?? null,
             'kind' => $validated['kind'] ?? Planner::KIND_EVENT,
             'status' => Planner::STATUS_PENDING,
-            'loger_profile_id' => $validated['profile_id'] ?? null,
         ]);
+        $workspace->setEventProfile($planner, $validated['profile_id'] ?? null);
 
         return response()->json([
             'success' => true,
@@ -1260,8 +1277,7 @@ class MobileController extends Controller
                 'date' => $planner->date->format('Y-m-d'),
                 'kind' => $planner->kind,
                 'status' => $planner->status,
-                'profile_id' => $planner->loger_profile_id,
-                'profile_name' => $planner->profile?->name,
+                ...ProfileWorkspaceService::eventProfileFields($workspace->eventProfiles($planner->team_id, [$planner->id])->get($planner->id)),
             ],
         ], 201);
     }
@@ -1273,15 +1289,16 @@ class MobileController extends Controller
     {
         $request->merge(['kind' => $request->input('kind', Planner::KIND_TASK)]);
 
-        return $this->storeEvent($request);
+        return $this->storeEvent($request, app(ProfileWorkspaceService::class));
     }
 
     /**
      * Mark a planner item as completed from the mobile app.
      */
-    public function completeEvent(Request $request, Planner $planner): JsonResponse
+    public function completeEvent(Request $request, Planner $planner, ProfileWorkspaceService $workspace): JsonResponse
     {
         abort_if($planner->team_id !== $request->user()->current_team_id, 403);
+        $this->ensureGuestOwnsEvent($request, $workspace, $planner);
 
         $planner->markAsCompleted(null, $request->input('notes'));
 
@@ -1291,9 +1308,10 @@ class MobileController extends Controller
     /**
      * Update a planner event (name, date, notes, total).
      */
-    public function updateEvent(Request $request, Planner $planner): JsonResponse
+    public function updateEvent(Request $request, Planner $planner, ProfileWorkspaceService $workspace): JsonResponse
     {
         abort_if($planner->team_id !== $request->user()->current_team_id, 403);
+        $this->ensureGuestOwnsEvent($request, $workspace, $planner);
 
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
@@ -1305,7 +1323,8 @@ class MobileController extends Controller
         ]);
 
         if (array_key_exists('profile_id', $validated)) {
-            $validated['loger_profile_id'] = $validated['profile_id'];
+            $this->ensureGuestWritesProfile($this->guestProfileIds($request, TeamMemberGrant::ACCESS_WRITE), $validated['profile_id']);
+            $workspace->setEventProfile($planner, $validated['profile_id']);
             unset($validated['profile_id']);
         }
 
@@ -1323,8 +1342,7 @@ class MobileController extends Controller
                 'total' => $planner->total ? (float) $planner->total : null,
                 'notes' => $planner->notes,
                 'completed_at' => $planner->completed_at?->format('Y-m-d'),
-                'profile_id' => $planner->loger_profile_id,
-                'profile_name' => $planner->profile?->name,
+                ...ProfileWorkspaceService::eventProfileFields($workspace->eventProfiles($planner->team_id, [$planner->id])->get($planner->id)),
             ],
         ]);
     }
@@ -1344,9 +1362,10 @@ class MobileController extends Controller
     /**
      * Cancel a planner event.
      */
-    public function cancelEvent(Request $request, Planner $planner): JsonResponse
+    public function cancelEvent(Request $request, Planner $planner, ProfileWorkspaceService $workspace): JsonResponse
     {
         abort_if($planner->team_id !== $request->user()->current_team_id, 403);
+        $this->ensureGuestOwnsEvent($request, $workspace, $planner);
 
         $planner->markAsCancelled($request->input('notes'));
 
@@ -1356,9 +1375,10 @@ class MobileController extends Controller
     /**
      * Reopen a completed/cancelled event back to pending.
      */
-    public function reopenEvent(Request $request, Planner $planner): JsonResponse
+    public function reopenEvent(Request $request, Planner $planner, ProfileWorkspaceService $workspace): JsonResponse
     {
         abort_if($planner->team_id !== $request->user()->current_team_id, 403);
+        $this->ensureGuestOwnsEvent($request, $workspace, $planner);
 
         $planner->update([
             'status' => Planner::STATUS_PENDING,
@@ -1545,8 +1565,8 @@ class MobileController extends Controller
         $chores = $planService->getPlanType($teamId, PlanTypes::CHORES, $request);
 
         $members = LogerProfile::where('team_id', $teamId)
-            ->get(['id', 'name'])
-            ->map(fn ($p) => ['id' => $p->id, 'name' => $p->name])
+            ->get(['id', 'name', 'color'])
+            ->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'color' => $p->color])
             ->values();
 
         return response()->json([
@@ -3885,6 +3905,34 @@ class MobileController extends Controller
         }
 
         return $anchor->greaterThan($now) ? $now : $anchor;
+    }
+
+    /**
+     * The profiles a guest was granted at that access level; null for members, who see everything.
+     *
+     * @return array<int, int>|null
+     */
+    private function guestProfileIds(Request $request, string $access): ?array
+    {
+        $user = $request->user();
+
+        return $user->isGuestOf($user->currentTeam) ? $user->grantedProfileIds($user->currentTeam, $access) : null;
+    }
+
+    /**
+     * A guest only puts events on a profile she can write.
+     *
+     * @param  array<int, int>|null  $writable
+     */
+    private function ensureGuestWritesProfile(?array $writable, ?int $profileId): void
+    {
+        abort_if($writable !== null && ! in_array((int) $profileId, $writable, true), 403, __('This has not been shared with you.'));
+    }
+
+    private function ensureGuestOwnsEvent(Request $request, ProfileWorkspaceService $workspace, Planner $planner): void
+    {
+        $writable = $this->guestProfileIds($request, TeamMemberGrant::ACCESS_WRITE);
+        $this->ensureGuestWritesProfile($writable, $workspace->eventProfiles($planner->team_id, [$planner->id])->get($planner->id)?->id);
     }
 
     private function teamProfileRule(int $teamId): Exists
