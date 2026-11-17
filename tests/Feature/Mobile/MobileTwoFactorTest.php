@@ -154,7 +154,7 @@ class MobileTwoFactorTest extends TestCase
             'email' => $this->user->email,
             'password' => 'password',
             'device_name' => 'new-device',
-        ])->assertStatus(402);
+        ])->assertStatus(422)->assertJsonPath('code', 'two_factor_required');
 
         $this->postJson('/api/sanctum/token', [
             'email' => $this->user->email,

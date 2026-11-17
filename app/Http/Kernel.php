@@ -8,6 +8,7 @@ use App\Http\Middleware\AppMenu;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\EnsureCoreModulePermissions;
+use App\Http\Middleware\EnsureUserHasHousehold;
 use App\Http\Middleware\FeatureFlag;
 use App\Http\Middleware\GuardGuestAccess;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -18,7 +19,6 @@ use App\Http\Middleware\TrimStrings;
 use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\VerifyCsrfToken;
 use Freesgen\Atmosphere\Http\Middleware\EnsureHasNoTeam;
-use Freesgen\Atmosphere\Http\Middleware\EnsureUserHasTeam;
 use Illuminate\Auth\Middleware\AuthenticateWithBasicAuth;
 use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
@@ -126,7 +126,7 @@ class Kernel extends HttpKernel
         'signed' => ValidateSignature::class,
         'throttle' => ThrottleRequests::class,
         'verified' => EnsureEmailIsVerified::class,
-        'atmosphere.teamed' => EnsureUserHasTeam::class,
+        'atmosphere.teamed' => EnsureUserHasHousehold::class,
         'atmosphere.unteamed' => EnsureHasNoTeam::class,
         'treasurer.biller' => EnsureIsBiller::class,
         'treasurer.subscribed' => Subscribed::class,

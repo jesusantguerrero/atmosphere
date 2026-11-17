@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\System;
 
+use App\Actions\Jetstream\AcceptTeamInvitation;
 use App\Actions\Jetstream\InviteTeamMember;
 use App\Models\TeamInvitation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Laravel\Jetstream\Contracts\AddsTeamMembers;
 use Laravel\Jetstream\Features;
 
 class TeamInvitationController
@@ -41,17 +41,7 @@ class TeamInvitationController
     public function accept(Request $request, $invitationId)
     {
         $invitation = TeamInvitation::findOrFail($invitationId);
-        abort_unless(strcasecmp($request->user()->email, $invitation->email) === 0, 403, __('This invitation was sent to another email.'));
-
-        app(AddsTeamMembers::class)->add(
-            $invitation->team->owner,
-            $invitation->team,
-            $invitation->email,
-            $invitation->role
-        );
-
-        $invitation->delete();
-        $request->user()->fresh()->switchTeam($invitation->team);
+        app(AcceptTeamInvitation::class)->accept($request->user(), $invitation);
 
         return redirect(config('fortify.home'))->banner(
             __('Great! You have accepted the invitation to join the :team team.', ['team' => $invitation->team->name]),
@@ -66,10 +56,7 @@ class TeamInvitationController
      */
     public function reject(Request $request, $invitationId)
     {
-        $invitation = TeamInvitation::findOrFail($invitationId);
-        abort_unless(strcasecmp($request->user()->email, $invitation->email) === 0, 403, __('This invitation was sent to another email.'));
-
-        $invitation->delete();
+        app(AcceptTeamInvitation::class)->reject($request->user(), TeamInvitation::findOrFail($invitationId));
 
         return back(303);
     }

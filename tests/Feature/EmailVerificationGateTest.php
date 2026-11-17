@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -25,7 +24,7 @@ class EmailVerificationGateTest extends TestCase
         $this->actingAs($user)->get('/budgets')->assertRedirect('/email/verify');
     }
 
-    public function test_the_mobile_login_asks_an_unverified_user_to_verify_and_resends_the_link(): void
+    public function test_the_mobile_login_asks_an_unverified_user_to_verify_without_mailing_on_every_attempt(): void
     {
         Notification::fake();
         $user = User::factory()->withPersonalTeam()->unverified()->create();
@@ -34,10 +33,10 @@ class EmailVerificationGateTest extends TestCase
             'email' => $user->email,
             'password' => 'password',
             'device_name' => 'android',
-        ])->assertStatus(402);
+        ])->assertStatus(422)->assertJsonPath('code', 'email_unverified')->assertJsonValidationErrors('email');
 
         $this->assertSame(0, $user->tokens()->count());
-        Notification::assertSentTo($user, VerifyEmail::class);
+        Notification::assertNothingSent();
     }
 
     public function test_existing_accounts_are_marked_verified_by_the_migration(): void

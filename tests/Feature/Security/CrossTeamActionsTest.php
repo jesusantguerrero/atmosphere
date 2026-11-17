@@ -191,10 +191,10 @@ class CrossTeamActionsTest extends TestCase
 
         $credentials = ['email' => $this->user->email, 'password' => 'password', 'device_name' => 'android'];
 
-        $this->postJson('/api/sanctum/token', $credentials)->assertStatus(402);
-        $this->postJson('/api/sanctum/token', [...$credentials, 'code' => '000000'])->assertStatus(402);
+        $this->postJson('/api/sanctum/token', $credentials)->assertStatus(422);
+        $this->postJson('/api/sanctum/token', [...$credentials, 'code' => '000000'])->assertStatus(422);
         $this->postJson('/api/sanctum/token', [...$credentials, 'recovery_code' => 'recovery-one'])->assertOk();
-        $this->postJson('/api/sanctum/token', [...$credentials, 'recovery_code' => 'recovery-one'])->assertStatus(402);
+        $this->postJson('/api/sanctum/token', [...$credentials, 'recovery_code' => 'recovery-one'])->assertStatus(422);
         $this->postJson('/api/sanctum/token', [...$credentials, 'code' => app(Google2FA::class)->getCurrentOtp($secret)])->assertOk();
     }
 
