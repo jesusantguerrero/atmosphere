@@ -17,6 +17,7 @@ interface TargetUser {
     profile_photo_url: string;
     is_super_admin: boolean;
     can_be_impersonated: boolean;
+    can_verify_email: boolean;
     owned_teams: Array<{ id: number; name: string; created_at: string }>;
     teams: Array<{ id: number; name: string; user_id: number; created_at: string }>;
 }
@@ -36,6 +37,13 @@ const impersonate = () => {
         {},
         { preserveScroll: false }
     );
+};
+
+const verifyForm = useForm({});
+const verifyEmail = () => {
+    verifyForm.patch(`/admin/users/${props.targetUser.id}/verify-email`, {
+        preserveScroll: true,
+    });
 };
 
 const showDeleteModal = ref(false);
@@ -69,6 +77,14 @@ const confirmDelete = () => {
                 </p>
             </div>
             <div class="flex flex-wrap gap-2">
+                <LogerButton
+                    v-if="targetUser.can_verify_email"
+                    variant="primary"
+                    :processing="verifyForm.processing"
+                    @click="verifyEmail"
+                >
+                    Mark email verified
+                </LogerButton>
                 <LogerButton
                     v-if="targetUser.can_be_impersonated"
                     variant="inverse"
