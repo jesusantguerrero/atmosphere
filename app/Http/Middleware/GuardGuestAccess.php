@@ -2,10 +2,12 @@
 
 namespace App\Http\Middleware;
 
+use App\Domains\LogerProfile\Models\LogerProfileEntity;
 use App\Models\TeamMemberGrant;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
+use Modules\Plan\Entities\Plan;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -66,15 +68,39 @@ class GuardGuestAccess
         }
 
         $access = $request->isMethodSafe() ? TeamMemberGrant::ACCESS_READ : TeamMemberGrant::ACCESS_WRITE;
-        $profileId = $route->parameter('profileId');
+        $reached = $this->profilesReached($route, (int) $team->id);
+        $granted = $user->grantedProfileIds($team, $access);
 
         abort_unless(
-            $this->opensToGuests($route) && $user->hasProfileGrant($team, $profileId === null ? null : (int) $profileId, $access),
+            $this->opensToGuests($route) && ($reached === null ? $granted !== [] : array_intersect($reached, $granted) !== []),
             403,
             __('This has not been shared with you.')
         );
 
         return $next($request);
+    }
+
+    /**
+     * The profiles a route acts on: its `{profileId}`, or those linked to its `{plan}` (a
+     * shopping list). Null when the route names neither and scopes itself.
+     *
+     * @return array<int, int>|null
+     */
+    private function profilesReached(Route $route, int $teamId): ?array
+    {
+        if ($route->hasParameter('profileId')) {
+            return [(int) $route->parameter('profileId')];
+        }
+
+        if ($route->hasParameter('plan')) {
+            $plan = $route->parameter('plan');
+
+            return LogerProfileEntity::query()->without('entity')->where('team_id', $teamId)
+                ->where('entity_type', Plan::class)->where('entity_id', (int) ($plan instanceof Plan ? $plan->id : $plan))
+                ->pluck('profile_id')->map(fn ($id) => (int) $id)->all();
+        }
+
+        return null;
     }
 
     private function requiresSignIn(Route $route): bool

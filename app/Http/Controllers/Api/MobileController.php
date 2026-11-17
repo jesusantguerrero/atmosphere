@@ -22,6 +22,7 @@ use App\Domains\Journal\Actions\AccountUpdate;
 use App\Domains\Journal\Actions\TransactionDelete;
 use App\Domains\Journal\Actions\TransactionUpdate;
 use App\Domains\LogerProfile\Models\LogerProfile;
+use App\Domains\LogerProfile\Models\LogerProfileEntity;
 use App\Domains\LogerProfile\Services\ProfileWorkspaceService;
 use App\Domains\Meal\Models\Meal;
 use App\Domains\Meal\Models\MealPlan;
@@ -2055,16 +2056,26 @@ class MobileController extends Controller
     {
         $user = $request->user();
         $teamId = $user->current_team_id;
+        $guestListIds = $this->guestShoppingListIds($request);
 
         $requestedId = $request->query('plan');
         $plan = null;
 
         if ($requestedId) {
+            abort_if($guestListIds !== null && ! in_array((int) $requestedId, $guestListIds, true), 403, __('This has not been shared with you.'));
             $plan = Plan::where([
                 'id' => $requestedId,
                 'team_id' => $teamId,
                 'plan_type_name' => PlanTypes::SHOPPING_LIST,
             ])->first();
+        }
+
+        if ($guestListIds !== null) {
+            // A guest shops from the lists linked to her profiles and never gets a new one.
+            $plan ??= Plan::where('team_id', $teamId)->whereIn('id', $guestListIds)->orderBy('id')->first();
+            if (! $plan) {
+                return response()->json(['plan' => null, 'lists' => [], 'activeListId' => null]);
+            }
         }
 
         if (! $plan) {
@@ -2082,7 +2093,7 @@ class MobileController extends Controller
         $allLists = Plan::where([
             'team_id' => $teamId,
             'plan_type_name' => PlanTypes::SHOPPING_LIST,
-        ])->orderBy('id')->get()->map(function (Plan $p) {
+        ])->when($guestListIds !== null, fn ($query) => $query->whereIn('id', $guestListIds))->orderBy('id')->get()->map(function (Plan $p) {
             $items = $p->stages->flatMap(fn ($s) => $s->items);
 
             return [
@@ -2249,6 +2260,8 @@ class MobileController extends Controller
 
         $data = $request->validated();
         $destination = isset($data['plan_id']) && (int) $data['plan_id'] !== $plan->id ? Plan::findOrFail($data['plan_id']) : $plan;
+        $guestListIds = $this->guestShoppingListIds($request, TeamMemberGrant::ACCESS_WRITE);
+        abort_if($guestListIds !== null && ! in_array($destination->id, $guestListIds, true), 403, __('This has not been shared with you.'));
 
         if (isset($data['stage_id']) || $destination->isNot($plan)) {
             $stage = isset($data['stage_id'])
@@ -3917,6 +3930,26 @@ class MobileController extends Controller
         $user = $request->user();
 
         return $user->isGuestOf($user->currentTeam) ? $user->grantedProfileIds($user->currentTeam, $access) : null;
+    }
+
+    /**
+     * Shopping lists linked to the guest's granted profiles; null for members.
+     *
+     * @return array<int, int>|null
+     */
+    private function guestShoppingListIds(Request $request, string $access = TeamMemberGrant::ACCESS_READ): ?array
+    {
+        $profileIds = $this->guestProfileIds($request, $access);
+        if ($profileIds === null) {
+            return null;
+        }
+
+        $planIds = LogerProfileEntity::query()->without('entity')->where('team_id', $request->user()->current_team_id)
+            ->where('entity_type', Plan::class)->whereIn('profile_id', $profileIds)->pluck('entity_id');
+
+        return Plan::query()->setEagerLoads([])->where('team_id', $request->user()->current_team_id)
+            ->where('plan_type_name', PlanTypes::SHOPPING_LIST)->whereIn('id', $planIds)
+            ->pluck('id')->map(fn ($id) => (int) $id)->all();
     }
 
     /**

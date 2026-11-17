@@ -217,7 +217,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocal
     Route::get('/meals/random', [MobileController::class, 'randomMeal'])->name('meals.random');
 
     // Shopping list
-    Route::get('/shopping', [MobileController::class, 'shoppingList'])->name('shopping.index');
+    Route::get('/shopping', [MobileController::class, 'shoppingList'])->middleware('guest.profile')->name('shopping.index');
     Route::post('/shopping/lists', [ShoppingListController::class, 'createList'])->name('shopping.lists.create');
     Route::post('/shopping/import', [ShoppingListController::class, 'import'])->name('shopping.import');
     Route::put('/shopping/{plan}', [ShoppingListController::class, 'renameList'])->name('shopping.rename');
@@ -225,12 +225,12 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocal
     Route::post('/shopping/{plan}/stages', [MobileController::class, 'addShoppingStage'])->name('shopping.stages.add');
     Route::patch('/shopping/{plan}/stages/{stage}', [MobileController::class, 'updateShoppingStage'])->name('shopping.stages.update');
     Route::delete('/shopping/{plan}/stages/{stage}', [MobileController::class, 'deleteShoppingStage'])->name('shopping.stages.delete');
-    Route::post('/shopping/{plan}/items', [MobileController::class, 'addShoppingItem'])->name('shopping.items.add');
-    Route::patch('/shopping/{plan}/items/{item}', [MobileController::class, 'updateShoppingItem'])->name('shopping.items.update');
-    Route::delete('/shopping/{plan}/items/{item}', [MobileController::class, 'deleteShoppingItem'])->name('shopping.items.delete');
-    Route::post('/shopping/{plan}/items/{item}/cycle', [MobileController::class, 'cycleShoppingItem'])->name('shopping.items.cycle');
-    Route::post('/shopping/{plan}/reset', [MobileController::class, 'resetShoppingList'])->name('shopping.reset');
-    Route::post('/shopping/{plan}/check-all', [MobileController::class, 'checkAllShoppingItems'])->name('shopping.check-all');
+    Route::post('/shopping/{plan}/items', [MobileController::class, 'addShoppingItem'])->middleware('guest.profile')->name('shopping.items.add');
+    Route::patch('/shopping/{plan}/items/{item}', [MobileController::class, 'updateShoppingItem'])->middleware('guest.profile')->name('shopping.items.update');
+    Route::delete('/shopping/{plan}/items/{item}', [MobileController::class, 'deleteShoppingItem'])->middleware('guest.profile')->name('shopping.items.delete');
+    Route::post('/shopping/{plan}/items/{item}/cycle', [MobileController::class, 'cycleShoppingItem'])->middleware('guest.profile')->name('shopping.items.cycle');
+    Route::post('/shopping/{plan}/reset', [MobileController::class, 'resetShoppingList'])->middleware('guest.profile')->name('shopping.reset');
+    Route::post('/shopping/{plan}/check-all', [MobileController::class, 'checkAllShoppingItems'])->middleware('guest.profile')->name('shopping.check-all');
     Route::post('/shopping/{plan}/share', [MobileController::class, 'shareShoppingList'])->name('shopping.share');
     Route::delete('/shopping/{plan}/share', [MobileController::class, 'unshareShoppingList'])->name('shopping.unshare');
     Route::post('/shopping/{plan}/sessions/start', [MobileController::class, 'startShoppingSession'])->name('shopping.sessions.start');
