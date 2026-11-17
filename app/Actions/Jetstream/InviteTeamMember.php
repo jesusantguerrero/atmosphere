@@ -11,6 +11,7 @@ use Laravel\Jetstream\Contracts\InvitesTeamMembers;
 use Laravel\Jetstream\Events\InvitingTeamMember;
 use Laravel\Jetstream\Jetstream;
 use Laravel\Jetstream\Rules\Role;
+use Throwable;
 
 class InviteTeamMember implements InvitesTeamMembers
 {
@@ -21,7 +22,7 @@ class InviteTeamMember implements InvitesTeamMembers
      * @param  mixed  $team
      * @return void
      */
-    public function invite($user, $team, string $email, string $role = null)
+    public function invite($user, $team, string $email, ?string $role = null)
     {
         Gate::forUser($user)->authorize('addTeamMember', $team);
 
@@ -34,7 +35,12 @@ class InviteTeamMember implements InvitesTeamMembers
             'role' => $role,
         ]);
 
-        Mail::to($email)->send(new TeamInvitationMail($invitation));
+        // The invitation stands even when the mailer is down; it can be resent.
+        try {
+            Mail::to($email)->send(new TeamInvitationMail($invitation));
+        } catch (Throwable $exception) {
+            report($exception);
+        }
     }
 
     /**

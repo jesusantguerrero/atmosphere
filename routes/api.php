@@ -97,6 +97,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocal
     Route::delete('/team/invitations/{invitation}', [MobileTeamController::class, 'cancelInvitation'])->whereNumber('invitation')->name('team.invitations.destroy');
     Route::put('/team/members/{user}', [MobileTeamController::class, 'updateRole'])->whereNumber('user')->name('team.members.update');
     Route::delete('/team/members/{user}', [MobileTeamController::class, 'removeMember'])->whereNumber('user')->name('team.members.destroy');
+    Route::get('/team/members/{user}/grants', [MobileTeamController::class, 'grants'])->whereNumber('user')->name('team.members.grants');
+    Route::put('/team/members/{user}/grants', [MobileTeamController::class, 'updateGrants'])->whereNumber('user')->name('team.members.grants.update');
 
     Route::get('/today', [MobileController::class, 'today'])->name('today');
     Route::get('/overview', [MobileController::class, 'overview'])->name('overview');
