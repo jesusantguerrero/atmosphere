@@ -43,7 +43,17 @@ class LogerNotification extends Notification
         'credit_card_renewal_alert' => 'Credit card renewal',
         'weekly_digest' => 'Weekly summary',
         'account_data_export_ready' => 'Data export ready',
+        'guest_weekly_digest' => 'Weekly summary of your profiles',
+        'guest_event_changed' => 'Calendar changes this week',
+        'guest_shopping_items_added' => 'New items on your shopping lists',
     ];
+
+    /**
+     * The only types a guest receives; members never get these.
+     *
+     * @var array<int, string>
+     */
+    public const GUEST_TYPES = ['guest_weekly_digest', 'guest_event_changed', 'guest_shopping_items_added'];
 
     public function typeKey(): string
     {

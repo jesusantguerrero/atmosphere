@@ -86,8 +86,12 @@ class MobilePreferencesController extends Controller
         $prefs = $user->notificationPrefs();
         $storedTypes = $prefs['types'] ?? [];
 
+        $isGuest = $user->isGuestOf($user->currentTeam);
         $types = [];
         foreach (LogerNotification::NOTIFICATION_TYPES as $key => $label) {
+            if (in_array($key, LogerNotification::GUEST_TYPES, true) !== $isGuest) {
+                continue;
+            }
             $typePrefs = $storedTypes[$key] ?? [];
             $types[] = [
                 'key' => $key,
