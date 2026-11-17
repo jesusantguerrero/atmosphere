@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Domains\LogerProfile\Models\LogerProfile;
+use App\Domains\LogerProfile\Services\ProfileWorkspaceService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Mobile\StoreLogerProfileRequest;
 use Illuminate\Http\JsonResponse;
@@ -24,6 +25,17 @@ class MobileLogerProfileController extends Controller
             ->orderBy('name')->orderBy('id')->get();
 
         return response()->json(['profiles' => $profiles->map(fn (LogerProfile $profile) => $this->present($profile))->values()]);
+    }
+
+    /**
+     * GET /api/mobile/profiles/overview — pending tasks and upcoming events of each profile, like the web overview.
+     */
+    public function overview(Request $request, ProfileWorkspaceService $workspace): JsonResponse
+    {
+        $user = $request->user();
+        $team = $user->currentTeam;
+
+        return response()->json(['profiles' => $workspace->overview($team->id, $user->isGuestOf($team) ? $user->grantedProfileIds($team) : null)]);
     }
 
     public function store(StoreLogerProfileRequest $request): JsonResponse

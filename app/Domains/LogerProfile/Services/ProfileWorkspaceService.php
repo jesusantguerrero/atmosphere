@@ -25,18 +25,21 @@ class ProfileWorkspaceService
     /**
      * What the web link picker offers (and saveLinks replaces).
      */
-    public const TYPES = ['category' => Category::class, 'plan' => Plan::class, 'occurrence' => Occurrence::class, 'task' => PlanItem::class];
+    public const TYPES = ['category' => Category::class, 'plan' => Plan::class, 'occurrence' => Occurrence::class, 'task' => PlanItem::class, 'account' => Account::class];
 
     /**
      * Everything a profile can be linked to; agenda events are linked from the calendar.
      */
-    public const ENTITY_TYPES = [...self::TYPES, 'schedule' => Planner::class, 'account' => Account::class];
+    public const ENTITY_TYPES = [...self::TYPES, 'schedule' => Planner::class];
 
     public const VIEWS = ['notebook' => 1, 'kanban' => 2, 'list' => 3];
 
-    public function overview(int $teamId): array
+    /**
+     * @param  array<int, int>|null  $profileIds  only these profiles (a guest's grants); null for all
+     */
+    public function overview(int $teamId, ?array $profileIds = null): array
     {
-        $profiles = LogerProfile::query()->where('team_id', $teamId)->orderByRaw('CASE WHEN personal_user_id = ? THEN 0 ELSE 1 END', [auth()->id() ?? 0])->orderBy('name')->get();
+        $profiles = LogerProfile::query()->where('team_id', $teamId)->when($profileIds !== null, fn ($query) => $query->whereIn('id', $profileIds))->orderByRaw('CASE WHEN personal_user_id = ? THEN 0 ELSE 1 END', [auth()->id() ?? 0])->orderBy('name')->get();
         $links = LogerProfileEntity::query()->without('entity')->where('team_id', $teamId)->whereIn('profile_id', $profiles->modelKeys())->get();
         $planIds = $links->where('entity_type', Plan::class)->pluck('entity_id');
         $itemIds = $links->where('entity_type', PlanItem::class)->pluck('entity_id');
@@ -53,7 +56,7 @@ class ProfileWorkspaceService
                 ->map(fn ($item) => $this->page($item, $linkedItems->contains($item->id) || $plans->get($item->plan_id)?->plan_type_name === PlanTypes::CHORES));
 
             return [
-                'id' => $profile->id, 'name' => $profile->name, 'personal_user_id' => $profile->personal_user_id,
+                'id' => $profile->id, 'name' => $profile->name, 'color' => $profile->color, 'personal_user_id' => $profile->personal_user_id,
                 'url' => route('loger-profiles.show', ['profileId' => $profile->id], false),
                 'pending' => $pages->where('kind', 'task')->where('done', false)->values()->all(),
                 'upcoming' => $pages->where('kind', 'event')->where('done', false)->filter(fn ($page) => $page['when'] && Carbon::parse($page['when'])->greaterThanOrEqualTo(today()))->sortBy('when')->values()->all(),
@@ -316,6 +319,8 @@ class ProfileWorkspaceService
             ->orderByDesc('transaction_lines.date')->orderByDesc('transaction_lines.id')->limit(20)
             ->get(['transaction_lines.id', 'transaction_lines.category_id', 'transaction_lines.amount', 'transaction_lines.type', 'transactions.description', 'transactions.date', 'transactions.currency_code'])
             ->map(fn ($line) => ['id' => $line->id, 'name' => $line->getRawOriginal('description'), 'date' => $line->date, 'amount' => (float) $line->amount * (int) $line->type, 'currency' => $line->currency_code, 'category' => $allCategories->find($line->category_id)?->name]);
+        $accounts = Account::query()->setEagerLoads([])->where('team_id', $profile->team_id)->whereIn('id', $ids(Account::class))->orderBy('index')->orderBy('id')->get()
+            ->map(fn (Account $account) => ['id' => $account->id, 'name' => $account->name, 'current_balance' => round((float) $account->balance, 2), 'currency_code' => $account->currency_code, 'closed_at' => $account->closed_at]);
         $options = [];
         foreach (self::TYPES as $type => $class) {
             $query = $class::query()->setEagerLoads([])->where('team_id', $profile->team_id);
@@ -324,7 +329,7 @@ class ProfileWorkspaceService
             }
             foreach ($query->orderBy('id')->get() as $entity) {
                 $options[] = ['key' => $type.':'.$entity->id, 'type' => $type, 'id' => $entity->id, 'name' => $entity->name ?? $entity->title,
-                    'label' => $type === 'category' && ! $entity->parent_id ? 'Grupo de categorías' : ['category' => 'Categoría', 'plan' => 'Tablero o lista', 'occurrence' => 'Seguimiento', 'task' => 'Elemento de Plan'][$type],
+                    'label' => $type === 'category' && ! $entity->parent_id ? 'Grupo de categorías' : ['category' => 'Categoría', 'plan' => 'Tablero o lista', 'occurrence' => 'Seguimiento', 'task' => 'Elemento de Plan', 'account' => 'Cuenta'][$type],
                     'linked' => $links->contains(fn ($link) => $link->entity_type === $class && (int) $link->entity_id === (int) $entity->id),
                 ];
             }
@@ -335,7 +340,8 @@ class ProfileWorkspaceService
             'categories' => $categories->map(fn ($category) => ['id' => $category->id, 'name' => $category->name, 'assigned' => (float) ($months->get($category->id)?->budgeted ?? 0), 'available' => (float) ($months->get($category->id)?->available ?? 0)])->values(),
             'categoryGroup' => $allCategories->whereIn('id', $ids(Category::class))->pluck('name')->implode(', '),
             'transactions' => $transactions, 'month' => now()->format('Y-m'),
-            'connections' => ['finance' => count($categoryIds) > 0, 'shopping' => $plans->contains(fn ($plan) => $plan->plan_type_name === PlanTypes::SHOPPING_LIST), 'tracking' => $occurrences->isNotEmpty()],
+            'accounts' => $accounts->values(),
+            'connections' => ['finance' => count($categoryIds) > 0 || $accounts->isNotEmpty(), 'accounts' => $accounts->isNotEmpty(), 'shopping' => $plans->contains(fn ($plan) => $plan->plan_type_name === PlanTypes::SHOPPING_LIST), 'tracking' => $occurrences->isNotEmpty()],
             'availableLinks' => $options,
             'tasks' => PlanItem::query()->where('team_id', $profile->team_id)->whereIn('id', $ids(PlanItem::class))->whereNotIn('plan_id', $ids(Plan::class))->get()->map(fn ($item) => $this->page($item, true))->values(),
         ];

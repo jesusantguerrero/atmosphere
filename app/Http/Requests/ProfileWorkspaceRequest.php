@@ -31,7 +31,7 @@ class ProfileWorkspaceRequest extends FormRequest
             'updateNotebook' => ['name' => ['required', 'string', 'max:150']],
             'createPage' => ['stage_id' => ['required', 'integer'], 'title' => ['nullable', 'string', 'max:255']],
             'updateItem' => ['title' => ['sometimes', 'required', 'string', 'max:255'], 'body' => ['sometimes', 'nullable', 'string', 'max:50000'], 'kind' => ['sometimes', Rule::in(['note', 'task', 'event'])], 'when' => ['sometimes', 'nullable', 'date'], 'done' => ['sometimes', 'boolean']],
-            'saveLinks' => ['selections' => ['present', 'array'], 'selections.*.type' => ['required', Rule::in(['category', 'plan', 'occurrence', 'task'])], 'selections.*.id' => ['required', 'integer']],
+            'saveLinks' => ['selections' => ['present', 'array'], 'selections.*.type' => ['required', Rule::in(['category', 'plan', 'occurrence', 'task', 'account'])], 'selections.*.id' => ['required', 'integer']],
             'registerOccurrence' => ['checked' => ['required', 'boolean']],
             default => [],
         };

@@ -196,6 +196,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocal
     // Household profiles and their workspace (same bodies and responses as the web preview).
     // `guest.profile` opens a route to guests granted that profile.
     Route::get('/profiles', [MobileLogerProfileController::class, 'index'])->middleware('guest.profile')->name('profiles.index');
+    Route::get('/profiles/overview', [MobileLogerProfileController::class, 'overview'])->middleware('guest.profile')->name('profiles.overview');
     Route::post('/profiles', [MobileLogerProfileController::class, 'store'])->name('profiles.store');
     Route::get('/profile-task-links/{itemId}', [TaskProfileController::class, 'show'])->middleware('guest.profile')->name('profile-task-links.show');
     Route::put('/profile-task-links/{itemId}', [TaskProfileController::class, 'update'])->name('profile-task-links.update');
