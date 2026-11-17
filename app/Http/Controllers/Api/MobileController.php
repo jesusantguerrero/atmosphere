@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\Jetstream\AcceptTeamInvitation;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\AppCore\Models\Planner;
 use App\Domains\Budget\Data\BudgetAssignData;
@@ -49,6 +50,7 @@ use App\Http\Resources\PlannedMealResource;
 use App\Models\Account;
 use App\Models\Setting;
 use App\Models\Team;
+use App\Models\TeamInvitation;
 use App\Models\TeamMemberGrant;
 use App\Models\User;
 use App\Services\ShoppingListReviewService;
@@ -3380,6 +3382,42 @@ class MobileController extends Controller
     public function me(Request $request): JsonResponse
     {
         return response()->json(MobileUserResource::make($request->user()));
+    }
+
+    /**
+     * POST /api/mobile/team-invitations/{invitation}/accept — joins the household, verifies the email.
+     */
+    public function acceptInvitation(Request $request, TeamInvitation $invitation, AcceptTeamInvitation $acceptTeamInvitation): JsonResponse
+    {
+        $acceptTeamInvitation->accept($request->user(), $invitation);
+
+        return response()->json(MobileUserResource::make($request->user()->fresh()));
+    }
+
+    /**
+     * DELETE /api/mobile/team-invitations/{invitation}
+     */
+    public function rejectInvitation(Request $request, TeamInvitation $invitation, AcceptTeamInvitation $acceptTeamInvitation): JsonResponse
+    {
+        $acceptTeamInvitation->reject($request->user(), $invitation);
+
+        return response()->json(['pending_invitations' => $request->user()->pendingInvitationsPayload()]);
+    }
+
+    /**
+     * POST /api/mobile/email/verification-notification { email } — the app's «Resend link».
+     * Same answer whether or not the email exists, so it can't be used to probe accounts.
+     */
+    public function resendVerification(Request $request): JsonResponse
+    {
+        $request->validate(['email' => ['required', 'email']]);
+
+        $user = User::where('email', $request->input('email'))->first();
+        if ($user && ! $user->hasVerifiedEmail()) {
+            $user->sendEmailVerificationNotification();
+        }
+
+        return response()->json(['message' => __('If that account is waiting for verification, we sent a new link.')], 202);
     }
 
     /**

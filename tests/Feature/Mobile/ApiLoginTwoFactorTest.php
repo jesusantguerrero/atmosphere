@@ -63,6 +63,6 @@ class ApiLoginTwoFactorTest extends TestCase
         ]);
 
         // Should demand 2FA code
-        $response->assertStatus(402);
+        $response->assertStatus(422)->assertJsonPath('code', 'two_factor_required')->assertJsonValidationErrors('code');
     }
 }

@@ -45,6 +45,7 @@ class MobileUserResource extends JsonResource
                 'name' => $team->name,
                 'role' => $this->roleIn($team),
             ])->values(),
+            'pending_invitations' => $this->pendingInvitationsPayload(),
             'two_factor_enabled' => $this->hasEnabledTwoFactorAuthentication(),
             'two_factor_confirmed' => filled($this->two_factor_secret) && $this->two_factor_confirmed_at !== null,
         ];

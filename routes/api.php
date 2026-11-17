@@ -63,10 +63,16 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('ap
 
 // Mobile app surface: clean, token-authenticated URLs under /api/mobile.
 // Reuses existing controllers/services; only reshapes payloads for the phone.
-Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocale::class])->prefix('mobile')->name('mobile.')->group(function () {
-    // Session & profile
+// Reachable before joining a household or verifying: who am I, sign out, and answering an invitation.
+Route::middleware(['auth:sanctum', SetUserLocale::class])->prefix('mobile')->name('mobile.')->group(function () {
     Route::get('/me', [MobileController::class, 'me'])->name('me');
     Route::delete('/session', [MobileController::class, 'logout'])->name('session.destroy');
+    Route::post('/team-invitations/{invitation}/accept', [MobileController::class, 'acceptInvitation'])->name('team-invitations.accept');
+    Route::delete('/team-invitations/{invitation}', [MobileController::class, 'rejectInvitation'])->name('team-invitations.reject');
+});
+
+Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocale::class])->prefix('mobile')->name('mobile.')->group(function () {
+    // Session & profile
     Route::patch('/me', [MobileProfileController::class, 'update'])->name('me.update');
     Route::put('/me/password', [MobileProfileController::class, 'updatePassword'])->middleware('throttle:10,1')->name('me.password.update');
     Route::post('/me/confirm-password', [MobileProfileController::class, 'confirmPassword'])->middleware('throttle:10,1')->name('me.password.confirm');
@@ -284,6 +290,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocal
 Route::prefix('mobile')->name('mobile.')->group(function () {
     Route::post('/auth/google', [MobileController::class, 'authGoogle'])->name('auth.google');
     Route::post('/auth/apple', [MobileController::class, 'authApple'])->name('auth.apple');
+    Route::post('/email/verification-notification', [MobileController::class, 'resendVerification'])->middleware('throttle:3,1')->name('email.verification-notification');
 
     // Inbound email webhook (user resolved from recipient address)
     Route::post('/inbound-email', [MobileController::class, 'inboundEmail'])->name('inbound-email');

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\VerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,6 +15,7 @@ use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Passport\Token;
 use Laravel\Sanctum\HasApiTokens;
+use Throwable;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -118,6 +120,41 @@ class User extends Authenticatable implements MustVerifyEmail
     public function oauthTokens(): HasMany
     {
         return $this->hasMany(Token::class, 'user_id');
+    }
+
+    /**
+     * Queued, and a mailer failure is reported instead of breaking the sign-up
+     * or login that triggered it.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        try {
+            $this->notify(new VerifyEmailNotification);
+        } catch (Throwable $exception) {
+            report($exception);
+        }
+    }
+
+    /**
+     * Households that invited this email and are waiting for an answer.
+     *
+     * @return Collection<int, TeamInvitation>
+     */
+    public function pendingInvitations(): Collection
+    {
+        return TeamInvitation::query()->with('team:id,name')->where('email', $this->email)->orderBy('id')->get();
+    }
+
+    /**
+     * @return array<int, array{id: int, team_name: string|null, role: string|null}>
+     */
+    public function pendingInvitationsPayload(): array
+    {
+        return $this->pendingInvitations()->map(fn (TeamInvitation $invitation) => [
+            'id' => $invitation->id,
+            'team_name' => $invitation->team?->name,
+            'role' => $invitation->role,
+        ])->values()->all();
     }
 
     public function memberGrants(): HasMany
