@@ -47,9 +47,21 @@ type Workspace = {
         currency: string;
         category: string;
     }[];
+    accounts: {
+        id: number;
+        name: string;
+        current_balance: number;
+        currency_code: string | null;
+        closed_at: string | null;
+    }[];
     categoryGroup: string;
     month: string;
-    connections: { finance: boolean; shopping: boolean; tracking: boolean };
+    connections: {
+        finance: boolean;
+        accounts: boolean;
+        shopping: boolean;
+        tracking: boolean;
+    };
     availableLinks: {
         key: string;
         id: number;
@@ -1297,6 +1309,7 @@ const setTab = (id: string) => {
                                 presupuesto
                             </h2>
                             <div
+                                v-if="categories.length"
                                 class="rounded-xl border border-body-1/10 bg-base-lvl-3 p-4"
                             >
                                 <div
@@ -1330,6 +1343,34 @@ const setTab = (id: string) => {
                                     Vincular el grupo reúne sus categorías y
                                     transacciones.
                                 </p>
+                            </div>
+                            <div
+                                v-if="connections.accounts"
+                                :class="categories.length ? 'mt-6' : ''"
+                            >
+                                <h3 class="mb-3 text-sm font-semibold">
+                                    Cuentas vinculadas
+                                </h3>
+                                <div
+                                    v-for="account in state.accounts"
+                                    :key="account.id"
+                                    class="flex justify-between gap-3 border-b border-body-1/10 py-3 text-sm last:border-0"
+                                >
+                                    <span
+                                        :class="
+                                            account.closed_at
+                                                ? 'text-body-1/40'
+                                                : ''
+                                        "
+                                        >{{ account.name }}</span
+                                    >
+                                    <span class="tabular-nums">{{
+                                        money(
+                                            account.current_balance,
+                                            account.currency_code ?? "DOP",
+                                        )
+                                    }}</span>
+                                </div>
                             </div>
                             <div v-if="tab === 'finance'" class="mt-6">
                                 <h3 class="mb-3 text-sm font-semibold">
@@ -1491,10 +1532,13 @@ const setTab = (id: string) => {
                         @click="setTab('finance')"
                     >
                         <Glyph name="wallet" /><span
-                            ><b>{{ state.categoryGroup }}</b
+                            ><b>{{ state.categoryGroup || "Sus cuentas" }}</b
                             ><small
-                                >{{ categories.length }} categorías del
-                                presupuesto</small
+                                >{{
+                                    categories.length
+                                        ? `${categories.length} categorías del presupuesto`
+                                        : `${state.accounts.length} cuenta(s)`
+                                }}</small
                             ></span
                         ><Glyph name="arrow" />
                     </button>
