@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Actions\Jetstream\TransferTeamOwnership;
 use App\Domains\LogerProfile\Models\LogerProfile;
+use App\Domains\LogerProfile\Services\ProfileWorkspaceService;
 use App\Http\Middleware\GuardGuestAccess;
 use App\Models\Team;
 use App\Models\TeamMemberGrant;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Laravel\Passport\Passport;
 use Laravel\Sanctum\Sanctum;
+use Modules\Plan\Entities\Plan;
+use Modules\Plan\Entities\PlanTypes;
 use Tests\TestCase;
 
 class GuestAccessTest extends TestCase
@@ -36,14 +39,13 @@ class GuestAccessTest extends TestCase
         return [$owner->fresh(), $guest->fresh(), $team];
     }
 
-    private function grant(User $guest, Team $team, string $module, string $access, ?int $profileId = null): TeamMemberGrant
+    private function grant(User $guest, Team $team, LogerProfile $profile, string $access): TeamMemberGrant
     {
         return TeamMemberGrant::create([
             'team_id' => $team->id,
             'user_id' => $guest->id,
-            'module' => $module,
+            'loger_profile_id' => $profile->id,
             'access' => $access,
-            'profile_id' => $profileId,
         ]);
     }
 
@@ -90,48 +92,55 @@ class GuestAccessTest extends TestCase
     public function test_me_reports_the_role_and_the_grants(): void
     {
         [$owner, $guest, $team] = $this->household();
-        $dianita = LogerProfile::create(['team_id' => $team->id, 'user_id' => $owner->id, 'name' => 'Dianita']);
-        $this->grant($guest, $team, TeamMemberGrant::MODULE_SHOPPING, TeamMemberGrant::ACCESS_WRITE);
-        $this->grant($guest, $team, TeamMemberGrant::MODULE_CALENDAR, TeamMemberGrant::ACCESS_READ, $dianita->id);
+        $dianita = LogerProfile::create(['team_id' => $team->id, 'user_id' => $owner->id, 'name' => 'Dianita', 'color' => '#123456']);
+        $house = LogerProfile::create(['team_id' => $team->id, 'user_id' => $owner->id, 'name' => 'Casa']);
+        $list = (new Plan)->forceFill(['team_id' => $team->id, 'user_id' => $owner->id, 'name' => 'Super', 'plan_type_name' => PlanTypes::SHOPPING_LIST]);
+        $list->save();
+        app(ProfileWorkspaceService::class)->link($dianita, $list, 'plan');
+        $this->grant($guest, $team, $dianita, TeamMemberGrant::ACCESS_WRITE);
+        $this->grant($guest, $team, $house, TeamMemberGrant::ACCESS_READ);
 
         Sanctum::actingAs($guest, ['*']);
         $this->getJson('/api/mobile/me')
             ->assertOk()
             ->assertJsonPath('role', 'guest')
-            ->assertJsonPath('grants.0.module', 'shopping')
-            ->assertJsonPath('grants.0.access', 'write')
-            ->assertJsonPath('grants.1.module', 'calendar')
-            ->assertJsonPath('grants.1.profile_id', $dianita->id)
-            ->assertJsonPath('grants.1.profile_name', 'Dianita');
+            ->assertJsonPath('grants.0', ['profile_id' => $dianita->id, 'access' => 'write', 'name' => 'Dianita', 'color' => '#123456', 'shopping_list_id' => $list->id])
+            ->assertJsonPath('grants.1.profile_id', $house->id)
+            ->assertJsonPath('grants.1.access', 'read')
+            ->assertJsonPath('grants.1.color', LogerProfile::defaultColor((string) $house->id))
+            ->assertJsonPath('grants.1.shopping_list_id', null);
 
         Sanctum::actingAs($owner, ['*']);
         $this->getJson('/api/mobile/me')->assertJsonPath('role', 'owner')->assertJsonPath('grants', []);
     }
 
-    public function test_a_declared_module_opens_by_access_level(): void
+    public function test_a_marked_route_opens_by_profile_and_access_level(): void
     {
         [$owner, $guest, $team] = $this->household();
-        Route::middleware(['api', 'auth:sanctum', 'guest.module:shopping'])->group(function () {
-            Route::get('/api/__guest-probe', fn () => 'read');
-            Route::post('/api/__guest-probe', fn () => 'write');
+        $dianita = LogerProfile::create(['team_id' => $team->id, 'user_id' => $owner->id, 'name' => 'Dianita']);
+        $house = LogerProfile::create(['team_id' => $team->id, 'user_id' => $owner->id, 'name' => 'Casa']);
+        Route::middleware(['api', 'auth:sanctum', 'guest.profile'])->group(function () {
+            Route::get('/api/__guest-probe/{profileId}', fn () => 'read');
+            Route::post('/api/__guest-probe/{profileId}', fn () => 'write');
+            Route::get('/api/__guest-probe', fn () => 'any');
         });
         Sanctum::actingAs($guest, ['*']);
 
+        $this->getJson('/api/__guest-probe/'.$dianita->id)->assertForbidden();
         $this->getJson('/api/__guest-probe')->assertForbidden();
 
-        $read = $this->grant($guest, $team, TeamMemberGrant::MODULE_SHOPPING, TeamMemberGrant::ACCESS_READ);
+        $read = $this->grant($guest, $team, $dianita, TeamMemberGrant::ACCESS_READ);
+        $this->getJson('/api/__guest-probe/'.$dianita->id)->assertOk();
         $this->getJson('/api/__guest-probe')->assertOk();
-        $this->postJson('/api/__guest-probe')->assertForbidden();
+        $this->postJson('/api/__guest-probe/'.$dianita->id)->assertForbidden();
+        $this->getJson('/api/__guest-probe/'.$house->id)->assertForbidden();
 
         $read->update(['access' => TeamMemberGrant::ACCESS_WRITE]);
-        $this->postJson('/api/__guest-probe')->assertOk();
-
-        $this->grant($guest, $team, TeamMemberGrant::MODULE_CALENDAR, TeamMemberGrant::ACCESS_WRITE);
-        $read->delete();
-        $this->getJson('/api/__guest-probe')->assertForbidden();
+        $this->postJson('/api/__guest-probe/'.$dianita->id)->assertOk();
+        $this->postJson('/api/__guest-probe/'.$house->id)->assertForbidden();
 
         Sanctum::actingAs($owner, ['*']);
-        $this->postJson('/api/__guest-probe')->assertOk();
+        $this->postJson('/api/__guest-probe/'.$house->id)->assertOk();
     }
 
     public function test_a_guest_never_inherits_or_receives_the_household(): void

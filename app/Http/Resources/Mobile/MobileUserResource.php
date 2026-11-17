@@ -33,11 +33,11 @@ class MobileUserResource extends JsonResource
             'role' => $this->currentTeam ? $this->roleIn($this->currentTeam) : null,
             'grants' => $this->currentTeam && $this->isGuestOf($this->currentTeam)
                 ? $this->grantsIn($this->currentTeam)->map(fn (TeamMemberGrant $grant) => [
-                    'module' => $grant->module,
+                    'profile_id' => $grant->loger_profile_id,
                     'access' => $grant->access,
-                    'profile_id' => $grant->profile_id,
-                    'profile_name' => $grant->profile?->name,
-                    'scope_id' => $grant->scope_id,
+                    'name' => $grant->profile?->name,
+                    'color' => $grant->profile?->color,
+                    'shopping_list_id' => $grant->profile?->shoppingListId(),
                 ])->values()
                 : [],
             'teams' => $this->allTeams()->map(fn (Team $team) => [

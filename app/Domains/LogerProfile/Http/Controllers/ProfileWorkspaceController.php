@@ -27,9 +27,30 @@ class ProfileWorkspaceController extends Controller
         return inertia('LogerProfile/WorkspacePreview', ['profile' => $profile->only(['id', 'name']), 'workspace' => $this->workspace->snapshot($profile)]);
     }
 
+    /**
+     * The app's version of the preview page.
+     */
+    public function workspace(Request $request, int $profileId): JsonResponse
+    {
+        $profile = $this->profile($request, $profileId);
+
+        return response()->json(['profile' => $profile->only(['id', 'name', 'color']), 'workspace' => $this->snapshotFor($request, $profile)]);
+    }
+
     private function result(LogerProfile $profile, array $extra = []): JsonResponse
     {
-        return response()->json(['workspace' => $this->workspace->snapshot($profile), ...$extra]);
+        return response()->json(['workspace' => $this->snapshotFor(request(), $profile), ...$extra]);
+    }
+
+    /**
+     * Guests never see what else in the household could be linked.
+     */
+    private function snapshotFor(Request $request, LogerProfile $profile): array
+    {
+        $snapshot = $this->workspace->snapshot($profile);
+        $user = $request->user();
+
+        return $user->isGuestOf($user->currentTeam) ? [...$snapshot, 'availableLinks' => []] : $snapshot;
     }
 
     public function createBoard(ProfileWorkspaceRequest $request, int $profileId): JsonResponse

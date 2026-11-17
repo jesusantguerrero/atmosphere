@@ -64,6 +64,19 @@ class ProfileWorkspaceService
         });
     }
 
+    /**
+     * Profiles that see this item, linked to it or to its board.
+     *
+     * @return array<int, int>
+     */
+    public function profileIdsReaching(PlanItem $item): array
+    {
+        return LogerProfileEntity::query()->without('entity')->where('team_id', $item->team_id)
+            ->where(fn ($query) => $query->where(fn ($link) => $link->where('entity_type', PlanItem::class)->where('entity_id', $item->id))
+                ->orWhere(fn ($link) => $link->where('entity_type', Plan::class)->where('entity_id', $item->plan_id)))
+            ->pluck('profile_id')->map(fn ($id) => (int) $id)->unique()->values()->all();
+    }
+
     public function links(LogerProfile $profile): Collection
     {
         return LogerProfileEntity::query()->without('entity')->where('team_id', $profile->team_id)->where('profile_id', $profile->id)->get();

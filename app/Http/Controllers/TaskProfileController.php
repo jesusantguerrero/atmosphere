@@ -29,11 +29,21 @@ class TaskProfileController extends Controller
         return PlanItem::query()->where('team_id', $request->user()->current_team_id)->findOrFail($itemId);
     }
 
-    public function show(Request $request, int $itemId): JsonResponse
+    /**
+     * A guest only reads items her profiles reach, and only sees those profiles.
+     */
+    public function show(Request $request, int $itemId, ProfileWorkspaceService $workspace): JsonResponse
     {
         $task = $this->task($request, $itemId);
+        $user = $request->user();
+        $granted = $user->isGuestOf($user->currentTeam) ? $user->grantedProfileIds($user->currentTeam) : null;
+        abort_if($granted !== null && array_intersect($granted, $workspace->profileIdsReaching($task)) === [], 404);
 
-        return response()->json(['profiles' => LogerProfile::query()->where('team_id', $task->team_id)->orderBy('name')->get(['id', 'name']), 'profile_ids' => LogerProfileEntity::query()->without('entity')->where('team_id', $task->team_id)->where('entity_type', PlanItem::class)->where('entity_id', $task->id)->pluck('profile_id')]);
+        return response()->json([
+            'profiles' => LogerProfile::query()->where('team_id', $task->team_id)->when($granted !== null, fn ($query) => $query->whereIn('id', $granted))->orderBy('name')->get(['id', 'name']),
+            'profile_ids' => LogerProfileEntity::query()->without('entity')->where('team_id', $task->team_id)->where('entity_type', PlanItem::class)->where('entity_id', $task->id)
+                ->when($granted !== null, fn ($query) => $query->whereIn('profile_id', $granted))->pluck('profile_id'),
+        ]);
     }
 
     public function update(TaskProfileRequest $request, int $itemId, ProfileWorkspaceService $workspace): JsonResponse
@@ -41,6 +51,6 @@ class TaskProfileController extends Controller
         $task = $this->task($request, $itemId);
         $workspace->setTaskProfiles($task, $request->validated('profile_ids'));
 
-        return $this->show($request, $itemId);
+        return $this->show($request, $itemId, $workspace);
     }
 }

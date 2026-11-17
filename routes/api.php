@@ -1,11 +1,13 @@
 <?php
 
 use App\Domains\AppCore\Http\Controllers\ApiLoginController;
+use App\Domains\LogerProfile\Http\Controllers\ProfileWorkspaceController;
 use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\MobileBriefController;
 use App\Http\Controllers\Api\MobileController;
 use App\Http\Controllers\Api\MobileLabelController;
+use App\Http\Controllers\Api\MobileLogerProfileController;
 use App\Http\Controllers\Api\MobileNextPaymentsController;
 use App\Http\Controllers\Api\MobileOccurrenceController;
 use App\Http\Controllers\Api\MobilePreferencesController;
@@ -19,6 +21,7 @@ use App\Http\Controllers\Finance\FinanceTrendController;
 use App\Http\Controllers\RoutineController;
 use App\Http\Controllers\ShoppingListController;
 use App\Http\Controllers\System\IntegrationController;
+use App\Http\Controllers\TaskProfileController;
 use App\Http\Middleware\SetUserLocale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -181,6 +184,24 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocal
     Route::post('/chores', [MobileController::class, 'storeChore'])->name('chores.store');
     Route::patch('/chores/{item}', [MobileController::class, 'updateChore'])->name('chores.update');
     Route::delete('/chores/{item}', [MobileController::class, 'deleteChore'])->name('chores.destroy');
+
+    // Household profiles and their workspace (same bodies and responses as the web preview).
+    // `guest.profile` opens a route to guests granted that profile.
+    Route::get('/profiles', [MobileLogerProfileController::class, 'index'])->middleware('guest.profile')->name('profiles.index');
+    Route::post('/profiles', [MobileLogerProfileController::class, 'store'])->name('profiles.store');
+    Route::get('/profile-task-links/{itemId}', [TaskProfileController::class, 'show'])->middleware('guest.profile')->name('profile-task-links.show');
+    Route::put('/profile-task-links/{itemId}', [TaskProfileController::class, 'update'])->name('profile-task-links.update');
+    Route::prefix('/profiles/{profileId}/workspace')->name('profile-workspace.')->controller(ProfileWorkspaceController::class)->group(function () {
+        Route::get('/', 'workspace')->middleware('guest.profile')->name('show');
+        Route::post('/boards', 'createBoard')->name('boards.store');
+        Route::patch('/boards/{boardId}', 'updateBoard')->name('boards.update');
+        Route::post('/boards/{boardId}/notebooks', 'createNotebook')->name('notebooks.store');
+        Route::patch('/boards/{boardId}/notebooks/{notebookId}', 'updateNotebook')->name('notebooks.update');
+        Route::post('/boards/{boardId}/pages', 'createPage')->name('pages.store');
+        Route::patch('/items/{itemId}', 'updateItem')->middleware('guest.profile')->name('items.update');
+        Route::put('/links', 'saveLinks')->name('links.update');
+        Route::patch('/occurrences/{occurrenceId}', 'registerOccurrence')->middleware('guest.profile')->name('occurrences.update');
+    });
 
     // Meals
     Route::get('/meals', [MobileController::class, 'meals'])->name('meals.index');
