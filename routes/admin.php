@@ -36,6 +36,12 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'admin.only'
         Route::patch('/users/{user}/role', [UserController::class, 'updateRole'])
             ->name('users.role')
             ->middleware('admin.only');
+        Route::patch('/users/{user}/verify-email', [UserController::class, 'verifyEmail'])
+            ->name('users.verify-email')
+            ->middleware('admin.only:superadmin');
+        Route::delete('/users/{user}/verify-email', [UserController::class, 'unverifyEmail'])
+            ->name('users.unverify-email')
+            ->middleware('admin.only:superadmin');
         Route::delete('/users/{user}', [UserController::class, 'destroy'])
             ->name('users.destroy')
             ->middleware('admin.only:superadmin');

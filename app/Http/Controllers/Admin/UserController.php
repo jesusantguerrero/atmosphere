@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -51,7 +52,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function show(User $user): Response
+    public function show(Request $request, User $user): Response
     {
         $user->load([
             'ownedTeams:id,name,user_id,created_at',
@@ -71,6 +72,8 @@ class UserController extends Controller
                 'profile_photo_url' => $user->profile_photo_url,
                 'is_super_admin' => $user->isSuperAdmin(),
                 'can_be_impersonated' => $user->canBeImpersonated(),
+                'can_verify_email' => ! $user->hasVerifiedEmail() && $request->user()->isSuperAdmin(),
+                'can_unverify_email' => $user->hasVerifiedEmail() && $request->user()->isSuperAdmin() && ! $request->user()->is($user),
                 'owned_teams' => $user->ownedTeams,
                 'teams' => $user->teams,
             ],
@@ -113,6 +116,32 @@ class UserController extends Controller
         $user->update(['role' => $newRole]);
 
         return back()->with('flash', ['type' => 'success', 'message' => 'Role updated.']);
+    }
+
+    /**
+     * Approve an account whose verification email never arrived. Super admin
+     * only; a no-op when the email is already verified.
+     */
+    public function verifyEmail(User $user): RedirectResponse
+    {
+        if (! $user->hasVerifiedEmail() && $user->markEmailAsVerified()) {
+            event(new Verified($user));
+        }
+
+        return back()->with('flash', ['type' => 'success', 'message' => 'Email marked as verified.']);
+    }
+
+    /**
+     * Back to unverified, for test accounts. Never on yourself: the backoffice
+     * sits behind `verified`, so it would lock you out.
+     */
+    public function unverifyEmail(Request $request, User $user): RedirectResponse
+    {
+        abort_if($request->user()->is($user), 422, 'Cannot unverify your own email.');
+
+        $user->forceFill(['email_verified_at' => null])->save();
+
+        return back()->with('flash', ['type' => 'success', 'message' => 'Email marked as unverified.']);
     }
 
     /**
