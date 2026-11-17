@@ -2,6 +2,7 @@
 
 namespace App\Actions\Jetstream;
 
+use App\Models\TeamMemberGrant;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Jetstream\Contracts\AddsTeamMembers;
@@ -31,6 +32,11 @@ class AddTeamMember implements AddsTeamMembers
         $team->users()->attach(
             $newTeamMember, ['role' => $role]
         );
+
+        if ($role === TeamMemberGrant::GUEST_ROLE) {
+            $invitedGrants = $team->teamInvitations()->where('email', $email)->latest('id')->first()?->grants;
+            app(SyncGuestGrants::class)->sync($team, $newTeamMember, $invitedGrants ?? []);
+        }
 
         TeamMemberAdded::dispatch($team, $newTeamMember);
     }

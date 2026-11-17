@@ -2,8 +2,8 @@
 
 namespace App\Http\Resources\Mobile;
 
+use App\Actions\Jetstream\SyncGuestGrants;
 use App\Models\Team;
-use App\Models\TeamMemberGrant;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -32,13 +32,7 @@ class MobileUserResource extends JsonResource
             'current_team' => $this->currentTeam ? ['id' => $this->currentTeam->id, 'name' => $this->currentTeam->name] : null,
             'role' => $this->currentTeam ? $this->roleIn($this->currentTeam) : null,
             'grants' => $this->currentTeam && $this->isGuestOf($this->currentTeam)
-                ? $this->grantsIn($this->currentTeam)->map(fn (TeamMemberGrant $grant) => [
-                    'profile_id' => $grant->loger_profile_id,
-                    'access' => $grant->access,
-                    'name' => $grant->profile?->name,
-                    'color' => $grant->profile?->color,
-                    'shopping_list_id' => $grant->profile?->shoppingListId(),
-                ])->values()
+                ? SyncGuestGrants::payload($this->grantsIn($this->currentTeam))
                 : [],
             'teams' => $this->allTeams()->map(fn (Team $team) => [
                 'id' => $team->id,

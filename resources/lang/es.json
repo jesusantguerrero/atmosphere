@@ -311,6 +311,7 @@
     "By date": "Por fecha",
     "Overdue": "Atrasada",
     "Connection problem": "Problema de conexión",
+    "Only guests are given access profile by profile.": "Solo a las invitadas se les da acceso perfil por perfil.",
     "You do not belong to a household yet.": "Todavía no perteneces a ningún hogar.",
     "The provided credentials are incorrect.": "El correo o la contraseña no son correctos.",
     "A valid two factor authentication code is required.": "Necesitamos un código válido de verificación en dos pasos.",
