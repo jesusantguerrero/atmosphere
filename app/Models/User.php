@@ -160,16 +160,6 @@ class User extends Authenticatable implements MustVerifyEmail
             ->pluck('loger_profile_id')->map(fn ($id) => (int) $id)->values()->all();
     }
 
-    /**
-     * Without a profile, any grant at that access level counts.
-     */
-    public function hasProfileGrant(Team $team, ?int $profileId, string $access = TeamMemberGrant::ACCESS_READ): bool
-    {
-        $granted = $this->grantedProfileIds($team, $access);
-
-        return $profileId === null ? $granted !== [] : in_array($profileId, $granted, true);
-    }
-
     public function sendLoginLink()
     {
         return config('atmosphere.superadmin.email') === $this?->email;
