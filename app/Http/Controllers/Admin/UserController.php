@@ -73,6 +73,7 @@ class UserController extends Controller
                 'is_super_admin' => $user->isSuperAdmin(),
                 'can_be_impersonated' => $user->canBeImpersonated(),
                 'can_verify_email' => ! $user->hasVerifiedEmail() && $request->user()->isSuperAdmin(),
+                'can_unverify_email' => $user->hasVerifiedEmail() && $request->user()->isSuperAdmin() && ! $request->user()->is($user),
                 'owned_teams' => $user->ownedTeams,
                 'teams' => $user->teams,
             ],
@@ -128,6 +129,19 @@ class UserController extends Controller
         }
 
         return back()->with('flash', ['type' => 'success', 'message' => 'Email marked as verified.']);
+    }
+
+    /**
+     * Back to unverified, for test accounts. Never on yourself: the backoffice
+     * sits behind `verified`, so it would lock you out.
+     */
+    public function unverifyEmail(Request $request, User $user): RedirectResponse
+    {
+        abort_if($request->user()->is($user), 422, 'Cannot unverify your own email.');
+
+        $user->forceFill(['email_verified_at' => null])->save();
+
+        return back()->with('flash', ['type' => 'success', 'message' => 'Email marked as unverified.']);
     }
 
     /**

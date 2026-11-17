@@ -18,6 +18,7 @@ interface TargetUser {
     is_super_admin: boolean;
     can_be_impersonated: boolean;
     can_verify_email: boolean;
+    can_unverify_email: boolean;
     owned_teams: Array<{ id: number; name: string; created_at: string }>;
     teams: Array<{ id: number; name: string; user_id: number; created_at: string }>;
 }
@@ -42,6 +43,11 @@ const impersonate = () => {
 const verifyForm = useForm({});
 const verifyEmail = () => {
     verifyForm.patch(`/admin/users/${props.targetUser.id}/verify-email`, {
+        preserveScroll: true,
+    });
+};
+const unverifyEmail = () => {
+    verifyForm.delete(`/admin/users/${props.targetUser.id}/verify-email`, {
         preserveScroll: true,
     });
 };
@@ -84,6 +90,14 @@ const confirmDelete = () => {
                     @click="verifyEmail"
                 >
                     Mark email verified
+                </LogerButton>
+                <LogerButton
+                    v-if="targetUser.can_unverify_email"
+                    variant="inverse"
+                    :processing="verifyForm.processing"
+                    @click="unverifyEmail"
+                >
+                    Mark email unverified
                 </LogerButton>
                 <LogerButton
                     v-if="targetUser.can_be_impersonated"

@@ -65,6 +65,22 @@ class AdminVerifyEmailTest extends TestCase
         $this->assertFalse($target->fresh()->hasVerifiedEmail());
     }
 
+    public function test_a_super_admin_unverifies_others_but_never_themselves(): void
+    {
+        $superAdmin = $this->admin('super_admin');
+        $target = User::factory()->create();
+
+        $this->actingAs($superAdmin)->delete(route('admin.users.unverify-email', $target))->assertRedirect();
+        $this->assertFalse($target->fresh()->hasVerifiedEmail());
+
+        $this->actingAs($superAdmin)->delete(route('admin.users.unverify-email', $superAdmin))->assertStatus(422);
+        $this->assertTrue($superAdmin->fresh()->hasVerifiedEmail());
+
+        $verified = User::factory()->create();
+        $this->actingAs($this->admin('admin'))->delete(route('admin.users.unverify-email', $verified))->assertForbidden();
+        $this->assertTrue($verified->fresh()->hasVerifiedEmail());
+    }
+
     public function test_the_detail_page_offers_the_action_only_to_a_super_admin_on_unverified_users(): void
     {
         $unverified = User::factory()->unverified()->create();
@@ -76,5 +92,9 @@ class AdminVerifyEmailTest extends TestCase
             ->assertInertia(fn ($page) => $page->where('targetUser.can_verify_email', false));
         $this->actingAs($this->admin('admin'))->get(route('admin.users.show', $unverified))
             ->assertInertia(fn ($page) => $page->where('targetUser.can_verify_email', false));
+        $this->actingAs($this->admin('super_admin'))->get(route('admin.users.show', $verified))
+            ->assertInertia(fn ($page) => $page->where('targetUser.can_unverify_email', true));
+        $this->actingAs($this->admin('admin'))->get(route('admin.users.show', $verified))
+            ->assertInertia(fn ($page) => $page->where('targetUser.can_unverify_email', false));
     }
 }
