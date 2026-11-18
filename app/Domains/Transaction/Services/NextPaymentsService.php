@@ -68,6 +68,7 @@ class NextPaymentsService
                     'counter_account_id' => $payment['counter_account_id'] ?? null,
                 ],
                 'window' => $matcher->windowFor($payment['due_date'], $payment['type'], $today),
+                'overpay' => $payment['type'] === 'budget_category',
             ])
             ->values();
 
@@ -75,13 +76,53 @@ class NextPaymentsService
             return $payments;
         }
 
-        $paid = $matcher->allocate($items, $matcher->candidates(
+        $candidates = $matcher->candidates(
             $teamId,
             $items->min(fn (array $item) => $item['window'][0]),
             $items->max(fn (array $item) => $item['window'][1]),
-        ));
+        );
+        $paid = $matcher->allocate($items, $candidates);
+        $this->followBillAmounts($teamId, $payments, $paid, $candidates);
 
         return $payments->reject(fn (array $payment) => isset($paid[$payment['id']]))->values();
+    }
+
+    /**
+     * A budget reminder settled by a single payment above its tolerance takes that
+     * amount as its new target once the previous month was paid the same (the
+     * provider raised the price; one bigger payment alone could be two months at once).
+     *
+     * @param  Collection<int, array<string, mixed>>  $payments
+     * @param  array<string, list<int>>  $paid
+     * @param  Collection<int, object>  $candidates
+     */
+    private function followBillAmounts(int $teamId, Collection $payments, array $paid, Collection $candidates): void
+    {
+        $payments->where('type', 'budget_category')
+            ->filter(fn (array $payment) => count($paid[$payment['id']] ?? []) === 1)
+            ->each(function (array $payment) use ($teamId, $paid, $candidates) {
+                $amountPaid = (float) $candidates->firstWhere('id', $paid[$payment['id']][0])?->total;
+                $target = (float) $payment['total'];
+                if ($amountPaid <= $target * (1 + PaymentMatcher::TOLERANCE)) {
+                    return;
+                }
+
+                $previousMonth = Carbon::parse($payment['due_date'])->startOfMonth()->subMonthNoOverflow();
+                $paidBefore = Transaction::query()
+                    ->where('team_id', $teamId)
+                    ->where('status', Transaction::STATUS_VERIFIED)
+                    ->where('direction', Transaction::DIRECTION_CREDIT)
+                    ->where('category_id', $payment['category_id'])
+                    ->whereBetween('date', [$previousMonth->format('Y-m-d'), $previousMonth->copy()->endOfMonth()->format('Y-m-d')])
+                    ->whereBetween('total', [$amountPaid * (1 - PaymentMatcher::TOLERANCE), $amountPaid * (1 + PaymentMatcher::TOLERANCE)])
+                    ->exists();
+                if (! $paidBefore) {
+                    return;
+                }
+
+                BudgetTarget::query()->where('team_id', $teamId)->whereKey($payment['metadata']['target_id'])
+                    ->first()?->update(['previous_amount' => $target, 'amount' => round($amountPaid, 2), 'amount_changed_at' => now()]);
+            });
     }
 
     private function getUnpaidBudgetCategories(int $teamId, Carbon $startDate, Carbon $endDate): array

@@ -45,6 +45,9 @@ class BudgetTarget extends Model
         'snoozed_month',
         'completed_at',
         'archived_at',
+        // Set when a bill reminder follows a new price (NextPaymentsService::followBillAmounts).
+        'previous_amount',
+        'amount_changed_at',
         // Loan target fields. `amount` still holds the computed monthly payment;
         // these describe the loan so the payment and payoff can be recomputed.
         'principal',
@@ -71,6 +74,8 @@ class BudgetTarget extends Model
     protected $casts = [
         'archived_at' => 'datetime',
         'amount' => 'decimal:2',
+        'previous_amount' => 'decimal:2',
+        'amount_changed_at' => 'datetime',
         'principal' => 'decimal:2',
         'interest_rate' => 'decimal:3',
         'term_months' => 'integer',

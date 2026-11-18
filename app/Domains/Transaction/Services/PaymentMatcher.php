@@ -12,6 +12,8 @@ use Illuminate\Support\Collection;
  * whatever way it entered (typed, bank import, approved draft). Matching keys:
  * same category, same payee or same destination account; the amount must be
  * within ±10%, or several smaller payments of the same key must add up to it.
+ * Items flagged `overpay` (bills whose price the provider sets) also take a single
+ * payment above the amount.
  * A transaction pays at most one item, and the earliest item claims first.
  */
 final class PaymentMatcher
@@ -30,7 +32,7 @@ final class PaymentMatcher
     public const OVERDUE_MONTHS = 2;
 
     /**
-     * @param  Collection<int, array{id: string, total: float, due_date: string, direction: string, keys: array<string, int|null>, window: array{0: string, 1: string}}>  $items
+     * @param  Collection<int, array{id: string, total: float, due_date: string, direction: string, keys: array<string, int|null>, window: array{0: string, 1: string}, overpay?: bool}>  $items
      * @param  Collection<int, object>  $candidates  verified transactions
      * @return array<string, list<int>> item id => transaction ids that pay it
      */
@@ -59,7 +61,7 @@ final class PaymentMatcher
                     ->sortBy('date')
                     ->values();
 
-                $paidBy = $this->pick($pool, $target);
+                $paidBy = $this->pick($pool, $target, $item['overpay'] ?? false);
                 if ($paidBy !== []) {
                     foreach ($paidBy as $id) {
                         $claimed[$id] = true;
@@ -75,14 +77,16 @@ final class PaymentMatcher
     }
 
     /**
-     * One transaction within the tolerance, or two or more smaller ones whose sum reaches it.
+     * One transaction within the tolerance (or above it, when overpaying counts),
+     * or two or more smaller ones whose sum reaches it.
      *
      * @param  Collection<int, object>  $pool  sorted by date
      * @return list<int>
      */
-    private function pick(Collection $pool, float $target): array
+    private function pick(Collection $pool, float $target, bool $overpay = false): array
     {
-        $single = $pool->first(fn (object $tx) => abs((float) $tx->total - $target) <= self::TOLERANCE * $target);
+        $single = $pool->first(fn (object $tx) => abs((float) $tx->total - $target) <= self::TOLERANCE * $target)
+            ?? ($overpay ? $pool->first(fn (object $tx) => (float) $tx->total > $target) : null);
         if ($single) {
             return [(int) $single->id];
         }

@@ -277,6 +277,8 @@ class MobileController extends Controller
                     $target = [
                         'id' => $bt->id,
                         'amount' => $targetAmount,
+                        'previous_amount' => $bt->previous_amount !== null ? (float) $bt->previous_amount : null,
+                        'amount_changed_at' => $bt->amount_changed_at?->toIso8601String(),
                         'needed' => round($needed, 2),
                         'due_date' => $dueDate,
                         'target_type' => $bt->target_type,
@@ -1081,6 +1083,8 @@ class MobileController extends Controller
             'id' => $target->id,
             'target_type' => $target->target_type,
             'amount' => (float) $target->amount,
+            'previous_amount' => $target->previous_amount !== null ? (float) $target->previous_amount : null,
+            'amount_changed_at' => $target->amount_changed_at?->toIso8601String(),
             'frequency' => strtoupper($target->frequency ?? 'MONTHLY'),
             'frequency_month_date' => $target->frequency_month_date ? (int) $target->frequency_month_date : null,
             'frequency_week_day' => $target->frequency_week_day,
