@@ -148,6 +148,58 @@ class NextPaymentsPaidDetectionTest extends TestCase
         $this->assertFalse($this->payments()->contains(fn (array $payment) => $payment['type'] === 'budget_category' && $payment['category_id'] === $internet->id));
     }
 
+    public function test_a_bill_paid_above_its_reminder_settles_it_and_the_target_follows_a_repeated_price(): void
+    {
+        $insurance = $this->category('Seguro de salud');
+        $target = $this->spendingTarget($insurance, 5241.60, 15);
+        $this->pay(['category_id' => $insurance->id, 'total' => 6342.34, 'date' => '2026-10-13']);
+        $this->pay(['category_id' => $insurance->id, 'total' => 6342.34, 'date' => '2026-11-13']);
+
+        $this->assertFalse($this->budgetListed($insurance));
+        $target->refresh();
+        $this->assertSame('6342.34', $target->amount);
+        $this->assertSame('5241.60', $target->previous_amount);
+        $this->assertNotNull($target->amount_changed_at);
+
+        Sanctum::actingAs($this->user);
+        $this->getJson('/api/mobile/budget?month=2026-11')->assertOk()
+            ->assertJsonFragment(['previous_amount' => 5241.6, 'amount' => 6342.34]);
+    }
+
+    public function test_a_single_bigger_payment_settles_the_reminder_without_moving_the_target_and_less_still_needs_the_tolerance(): void
+    {
+        $gym = $this->category('Gimnasio');
+        $target = $this->spendingTarget($gym, 2000, 20);
+        $this->pay(['category_id' => $gym->id, 'total' => 4000, 'date' => '2026-11-05']);
+        $this->assertFalse($this->budgetListed($gym));
+        $this->assertSame('2000.00', $target->fresh()->amount);
+        $this->assertNull($target->fresh()->previous_amount);
+
+        $water = $this->category('Agua');
+        $this->spendingTarget($water, 2000, 20);
+        $this->pay(['category_id' => $water->id, 'total' => 1700, 'date' => '2026-11-05']);
+        $this->assertTrue($this->budgetListed($water));
+    }
+
+    public function test_a_planned_bill_still_needs_the_tolerance_when_paid_above(): void
+    {
+        $light = $this->category('Luz');
+        $plan = $this->plan($light, 5000, '2026-11-20');
+        $this->pay(['category_id' => $light->id, 'total' => 6000, 'date' => '2026-11-08']);
+
+        $this->assertListed($plan, '2026-11-20');
+    }
+
+    private function spendingTarget(Category $category, float $amount, int $day): BudgetTarget
+    {
+        return BudgetTarget::create(['team_id' => $this->teamId, 'user_id' => $this->user->id, 'category_id' => $category->id, 'target_type' => BudgetTarget::TYPE_SPENDING, 'amount' => $amount, 'frequency' => 'monthly', 'frequency_month_date' => $day, 'notify' => true]);
+    }
+
+    private function budgetListed(Category $category): bool
+    {
+        return $this->payments()->contains(fn (array $payment) => $payment['type'] === 'budget_category' && $payment['category_id'] === $category->id);
+    }
+
     private function category(string $name): Category
     {
         return Category::create(['name' => $name, 'team_id' => $this->teamId, 'resource_type' => 'transactions', 'parent_id' => $this->group->id, 'depth' => 1, 'index' => 0]);
