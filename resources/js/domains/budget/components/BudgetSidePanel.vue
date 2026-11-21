@@ -32,7 +32,7 @@ const props = defineProps<{
   exportBudgetUrl: string;
 }>();
 
-const emit = defineEmits<{ (e: "copy-from-previous"): void }>();
+const emit = defineEmits<{ (e: "copy-from-previous"): void; (e: "fund-underfunded"): void }>();
 
 /**
  * Aggregate totals across every group. Expects the groups as useBudget
@@ -73,6 +73,13 @@ const totals = computed(() => {
               <section class="flex items-center w-full">
                 <IMdiContentCopy class="mr-2" />
                 <span>{{ $t('Use last month\'s plan') }}</span>
+              </section>
+            </AtDropdownLink>
+
+            <AtDropdownLink as="button" @click="emit('fund-underfunded')">
+              <section class="flex items-center w-full">
+                <IMdiTargetVariant class="mr-2" />
+                <span>{{ $t('Fund what is missing') }}</span>
               </section>
             </AtDropdownLink>
 

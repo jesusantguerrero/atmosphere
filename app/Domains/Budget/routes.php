@@ -35,6 +35,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::put('/budgets/{category}/months/{month}', 'updateActivity')->name('budget.update-activity');
         Route::post('/budgets/{category}/months/{month}/split', 'split')->name('budget.split');
         Route::post('/budgets/months/{month}/copy-from-previous', 'copyFromPrevious')->name('budget.copy-from-previous');
+        Route::get('/budgets/months/{month}/underfunded', 'underfunded')->name('budget.underfunded')->where('month', '\d{4}-\d{2}-\d{2}');
+        Route::post('/budgets/months/{month}/underfunded', 'fundUnderfunded')->name('budget.fund-underfunded')->where('month', '\d{4}-\d{2}-\d{2}');
         Route::delete('/budget-movements/{movement}', 'destroyMovement')->name('budget-movements.destroy');
         Route::post('/budgets-import', 'import')->name('budget.import');
         Route::get('/budgets-export', 'export')->name('budget.export');

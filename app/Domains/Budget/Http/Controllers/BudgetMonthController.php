@@ -9,8 +9,10 @@ use App\Domains\Budget\Imports\BudgetImport;
 use App\Domains\Budget\Models\BudgetMovement;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Budget\Services\BudgetMovementService;
+use App\Domains\Budget\Services\BudgetQuickAssignService;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Traits\HasEnrichedRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Insane\Journal\Models\Core\Category;
@@ -75,6 +77,35 @@ class BudgetMonthController extends Controller
         return Redirect::back()->with('flash', [
             'type' => 'success',
             'message' => "Copied {$result['copied']} categories from previous month",
+            'meta' => $result,
+        ]);
+    }
+
+    /**
+     * Preview of "Cubrir lo que falta": what each underfunded category would get from Ready to Assign.
+     */
+    public function underfunded(Request $request, BudgetQuickAssignService $service, string $month): JsonResponse
+    {
+        return response()->json($service->plan($request->user()->current_team_id, $month));
+    }
+
+    public function fundUnderfunded(Request $request, BudgetQuickAssignService $service, string $month)
+    {
+        $data = $request->validate([
+            'category_ids' => ['sometimes', 'array'],
+            'category_ids.*' => ['integer'],
+        ]);
+
+        $result = $service->apply(
+            $request->user()->current_team_id,
+            $request->user()->id,
+            $month,
+            isset($data['category_ids']) ? array_map('intval', $data['category_ids']) : null,
+        );
+
+        return Redirect::back()->with('flash', [
+            'type' => 'success',
+            'message' => __('Funded :count categories', ['count' => $result['funded']]),
             'meta' => $result,
         ]);
     }
