@@ -12,6 +12,7 @@ import { AtDropdownLink } from "atmosphere-ui";
 import IconClose from "@/Components/icons/IconClose.vue";
 import Modal from "@/Components/atoms/Modal.vue";
 import ConfirmationModal from "@/Components/atoms/ConfirmationModal.vue";
+import Checkbox from "@/Components/atoms/Checkbox.vue";
 import JetDropdown from "@/Components/atoms/Dropdown.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import LogerButtonCircle from "@/Components/atoms/LogerButtonCircle.vue";
@@ -240,6 +241,48 @@ const copyFromPrevious = () => {
 const confirmCopyOverwrite = () => {
     isConfirmingCopyOverwrite.value = false;
     performCopyFromPrevious(true);
+};
+
+// "Cubrir lo que falta": preview what every underfunded target would get from
+// Ready to assign, let the user untick some, then assign them in one go.
+const fundPlan = ref<any>(null);
+const fundSelected = ref<number[]>([]);
+const isFunding = ref(false);
+
+const openFundUnderfunded = async () => {
+    if (!currentMonthIso.value) return;
+    const { data } = await window.axios.get(`/budgets/months/${currentMonthIso.value}/underfunded`);
+    fundPlan.value = data;
+    fundSelected.value = data.items.filter((item: any) => item.amount > 0).map((item: any) => item.category_id);
+};
+
+const fundPreview = computed(() => {
+    let left = Math.max(0, Number(fundPlan.value?.ready_to_assign ?? 0));
+    return (fundPlan.value?.items ?? []).map((item: any) => {
+        const amount = fundSelected.value.includes(item.category_id) ? Math.min(item.needed, left) : 0;
+        left = Math.round((left - amount) * 100) / 100;
+        return { ...item, amount };
+    });
+});
+
+const fundTotal = computed(() => fundPreview.value.reduce((total: number, item: any) => total + item.amount, 0));
+
+const confirmFundUnderfunded = () => {
+    isFunding.value = true;
+    router.post(
+        `/budgets/months/${currentMonthIso.value}/underfunded`,
+        { category_ids: fundSelected.value },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                fundPlan.value = null;
+                router.reload({ only: ['budgets'] });
+            },
+            onFinish: () => {
+                isFunding.value = false;
+            },
+        }
+    );
 };
 
 const toggleFilter = async (value: string) => {
@@ -530,6 +573,7 @@ const budgetCsvExportUrl = computed(() => {
           :budget-csv-export-url="budgetCsvExportUrl"
           :export-budget-url="route('budget.export')"
           @copy-from-previous="copyFromPrevious()"
+          @fund-underfunded="openFundUnderfunded()"
         >
           <template #detail>
             <BudgetDetailForm
@@ -582,6 +626,48 @@ const budgetCsvExportUrl = computed(() => {
                 </LogerButton>
                 <LogerButton variant="error" rounded @click="confirmCopyOverwrite">
                     {{ $t('Overwrite') }}
+                </LogerButton>
+            </div>
+        </template>
+    </ConfirmationModal>
+    <ConfirmationModal
+        :show="!!fundPlan"
+        :title="$t('Fund what is missing')"
+        @close="fundPlan = null"
+    >
+        <template #content>
+            <p v-if="!fundPreview.length">{{ $t('Every target is funded this month.') }}</p>
+            <template v-else>
+                <p class="text-sm text-body-1/70">
+                    {{ $t('Ready to assign') }}: {{ formatMoney(fundPlan.ready_to_assign) }}
+                </p>
+                <ul class="mt-3 divide-y divide-base-lvl-2">
+                    <li v-for="item in fundPreview" :key="item.category_id" class="flex items-center gap-3 py-2">
+                        <Checkbox v-model:checked="fundSelected" :value="item.category_id" />
+                        <div class="flex-1 min-w-0">
+                            <p class="truncate">{{ item.name }}</p>
+                            <p class="text-xs text-body-1/70">
+                                {{ item.group_name }}<template v-if="item.due_day"> · {{ $t('Due day {day}', { day: item.due_day }) }}</template>
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold">{{ formatMoney(item.amount) }}</p>
+                            <p v-if="item.amount < item.needed" class="text-xs text-warning">
+                                {{ $t('Missing {amount}', { amount: formatMoney(item.needed - item.amount) }) }}
+                            </p>
+                        </div>
+                    </li>
+                </ul>
+                <p class="mt-3 font-semibold text-right">{{ $t('Total') }}: {{ formatMoney(fundTotal) }}</p>
+            </template>
+        </template>
+        <template #footer>
+            <div class="flex items-center justify-end gap-2">
+                <LogerButton variant="neutral" rounded @click="fundPlan = null">
+                    {{ $t('Cancel') }}
+                </LogerButton>
+                <LogerButton v-if="fundTotal > 0" rounded :disabled="isFunding" @click="confirmFundUnderfunded">
+                    {{ $t('Assign') }} {{ formatMoney(fundTotal) }}
                 </LogerButton>
             </div>
         </template>

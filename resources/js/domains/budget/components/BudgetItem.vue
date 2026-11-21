@@ -221,7 +221,7 @@ const handleAssignOptions = (option: string) => {
       setAmount(targetAmount);
       break;
     case BudgetAssignOptions.Underfunded:
-      setAmount(targetAmount - props.item.available);
+      setAmount(Number(props.item.budgeted) + targetAmount - props.item.available);
       break;
     case BudgetAssignOptions.MatchAccount:
       setAmount(accountMatch.value?.balance - props.item.available);
