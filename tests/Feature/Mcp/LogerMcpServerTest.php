@@ -81,6 +81,33 @@ class LogerMcpServerTest extends TestCase
         $server->tool(GetSpendingByCategoryTool::class, ['month' => 'noviembre'])->assertHasErrors();
     }
 
+    public function test_credit_cards_show_which_statement_a_purchase_today_lands_in(): void
+    {
+        [$user, $team] = $this->makeHousehold();
+        $card = fn (string $name, int $closingDay, array $attributes = []) => Account::forceCreate([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'name' => $name,
+            'display_id' => str($name)->slug('_')->value(),
+            'currency_code' => 'DOP',
+            'account_detail_type_id' => AccountDetailType::where('name', AccountDetailType::CREDIT_CARD)->value('id'),
+            'balance_type' => 'CREDIT',
+            'type' => 1,
+            'credit_closing_day' => $closingDay,
+            ...$attributes,
+        ]);
+        $card('Qik', 5, ['credit_payment_days' => 20, 'credit_limit' => 50000]);
+        $card('Sirena', 9, ['credit_payment_days' => 23]);
+        $card('BHD Gold', 31);
+
+        LogerServer::actingAs($user)->tool(ListAccountsAndCategoriesTool::class)->assertOk()
+            ->assertSee(['"closing_day":5,"payment_days":20,"credit_limit":50000,"available_credit":50000',
+                '"current_statement":{"closes_on":"2026-12-05","due_on":"2026-12-25"},"next_statement":{"starts_on":"2026-12-06","closes_on":"2027-01-05","due_on":"2027-01-25"}'])
+            ->assertSee(['"closing_day":9,"payment_days":23,"credit_limit":null,"available_credit":null',
+                '"current_statement":{"closes_on":"2026-11-09","due_on":"2026-12-02"},"next_statement":{"starts_on":"2026-11-10","closes_on":"2026-12-09","due_on":"2027-01-01"}'])
+            ->assertSee('"current_statement":{"closes_on":"2026-11-30","due_on":"2026-11-30"},"next_statement":{"starts_on":"2026-12-01","closes_on":"2026-12-31"');
+    }
+
     public function test_upcoming_payments_lists_pending_bills_within_the_window(): void
     {
         [$user, $team, , $group] = $this->makeHousehold();
