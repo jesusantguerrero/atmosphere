@@ -89,6 +89,15 @@ class GuestAccessTest extends TestCase
         $this->getJson('/api/mobile/calendar')->assertOk();
     }
 
+    public function test_a_guest_can_start_a_household_of_their_own(): void
+    {
+        [, $guest] = $this->household();
+
+        $this->actingAs($guest)->get(route('teams.create'))->assertOk();
+        $this->actingAs($guest)->getJson(route('api.timezones.index'))->assertOk();
+        $this->actingAs($guest)->getJson(route('api.currencies.index'))->assertOk();
+    }
+
     public function test_me_reports_the_role_and_the_grants(): void
     {
         [$owner, $guest, $team] = $this->household();

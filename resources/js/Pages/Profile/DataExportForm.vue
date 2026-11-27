@@ -2,7 +2,7 @@
     import { useForm } from '@inertiajs/vue3'
 
     import JetActionSection from '@/Components/atoms/ActionSection.vue'
-    import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
+    import LogerButton from '@/Components/atoms/LogerButton.vue'
 
     const form = useForm({});
 
@@ -22,13 +22,15 @@
             </div>
 
             <div class="mt-5">
-                <JetSecondaryButton
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing || form.recentlySuccessful"
+                <LogerButton
+                    type="button"
+                    variant="ghost"
+                    :processing="form.processing"
+                    :disabled="form.recentlySuccessful"
                     @click="requestExport"
                 >
                     {{ form.recentlySuccessful ? $t('Preparing your data…') : $t('Download my data') }}
-                </JetSecondaryButton>
+                </LogerButton>
             </div>
         </template>
     </JetActionSection>
