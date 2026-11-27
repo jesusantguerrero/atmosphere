@@ -43,11 +43,10 @@
 
 <template>
     <JetFormSection @submitted="updatePassword"
-        :title="$t('Update password')"
-        :description="$t('Ensure your account uses a long, random password to stay secure.')"
+        :description="$t('Use a long password you do not use anywhere else.')"
     >
         <template #form>
-            <AtField class="col-span-6 sm:col-span-4"
+            <AtField class="col-span-6 sm:col-span-2"
                 field="current_password"
                 :label="$t('Current Password')"
                 :errors="form.errors"
@@ -55,7 +54,7 @@
                 <AtInputPassword id="current_password" :class="inputClass" v-model="form.current_password" ref="currentPassword" autocomplete="current-password" />
             </AtField>
 
-            <AtField class="col-span-6 sm:col-span-4"
+            <AtField class="col-span-6 sm:col-span-2"
                 field="password"
                 :label="$t('New Password')"
                 :errors="form.errors"
@@ -63,7 +62,7 @@
                 <AtInputPassword id="password" :class="inputClass" v-model="form.password" ref="password" autocomplete="new-password" />
             </AtField>
 
-            <AtField class="col-span-6 sm:col-span-4"
+            <AtField class="col-span-6 sm:col-span-2"
                 :label="$t('Confirm password')"
                 field="password_confirmation"
                 :errors="form.errors"

@@ -24,6 +24,7 @@ declare module 'vue' {
     IMdiBullseyeArrow: typeof import('~icons/mdi/bullseye-arrow')['default']
     IMdiCalendarMultipleCheck: typeof import('~icons/mdi/calendar-multiple-check')['default']
     IMdiCallSplit: typeof import('~icons/mdi/call-split')['default']
+    IMdiCameraOutline: typeof import('~icons/mdi/camera-outline')['default']
     IMdiCartOutline: typeof import('~icons/mdi/cart-outline')['default']
     IMdiCash: typeof import('~icons/mdi/cash')['default']
     IMdiCellphone: typeof import('~icons/mdi/cellphone')['default']
