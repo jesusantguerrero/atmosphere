@@ -18,9 +18,13 @@ use Symfony\Component\HttpFoundation\Response;
 class GuardGuestAccess
 {
     /**
-     * Their own account, security, notifications and switching or joining households.
+     * Their own account, security, notifications and switching, joining or creating households.
      */
     const ACCOUNT_ROUTES = [
+        'teams.create',
+        'teams.store',
+        'api.timezones.index',
+        'api.currencies.index',
         'logout',
         'profile.show',
         'user.security',

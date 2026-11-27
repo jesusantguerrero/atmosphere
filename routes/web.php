@@ -371,9 +371,9 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
 Route::middleware(['auth:sanctum'])->prefix('/api')->name('api.')->group(function () {
     // timezones
-    Route::get('/timezones', [TimezonesApiController::class, 'index']);
+    Route::get('/timezones', [TimezonesApiController::class, 'index'])->name('timezones.index');
     // currencies
-    Route::get('/currencies', [CurrencyApiController::class, 'index']);
+    Route::get('/currencies', [CurrencyApiController::class, 'index'])->name('currencies.index');
     Route::get('/category-transactions/{category}', [FinanceLinesController::class, 'getTransactions']);
     Route::get('/category-transactions/{category}/details', [FinanceLinesController::class, 'getDetails']);
 
