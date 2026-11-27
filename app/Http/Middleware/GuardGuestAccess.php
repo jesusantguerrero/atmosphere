@@ -60,6 +60,7 @@ class GuardGuestAccess
         'mobile.current-team.update',
         'mobile.account.delete',
         'mobile.team-invitations.*',
+        'mobile.team.members',
     ];
 
     public function handle(Request $request, Closure $next): Response

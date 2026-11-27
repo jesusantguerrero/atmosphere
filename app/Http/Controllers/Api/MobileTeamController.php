@@ -35,10 +35,13 @@ class MobileTeamController extends Controller
             $team->users->map(fn (User $member) => $this->memberPayload($member, $member->membership->role))
         );
 
+        $role = $this->roleKey($user, $team);
+        $invitations = $role === TeamMemberGrant::GUEST_ROLE ? collect() : $team->teamInvitations;
+
         return response()->json([
             'members' => $members->values(),
-            'invitations' => $team->teamInvitations->map(fn (TeamInvitation $invitation) => $this->invitationPayload($invitation))->values(),
-            'my_role' => $this->roleKey($user, $team),
+            'invitations' => $invitations->map(fn (TeamInvitation $invitation) => $this->invitationPayload($invitation))->values(),
+            'my_role' => $role,
         ]);
     }
 

@@ -98,6 +98,23 @@ class GuestAccessTest extends TestCase
         $this->actingAs($guest)->getJson(route('api.currencies.index'))->assertOk();
     }
 
+    public function test_a_guest_sees_who_shares_the_household_but_not_pending_invitations(): void
+    {
+        [$owner, $guest, $team] = $this->household();
+        $team->teamInvitations()->create(['email' => 'someone@example.com', 'role' => 'editor']);
+
+        Sanctum::actingAs($guest, ['*']);
+        $this->getJson('/api/mobile/team/members')
+            ->assertOk()
+            ->assertJsonPath('my_role', TeamMemberGrant::GUEST_ROLE)
+            ->assertJsonCount(2, 'members')
+            ->assertJsonPath('invitations', []);
+        $this->putJson("/api/mobile/team/members/{$guest->id}", ['role' => 'editor'])->assertForbidden();
+
+        Sanctum::actingAs($owner, ['*']);
+        $this->getJson('/api/mobile/team/members')->assertOk()->assertJsonCount(1, 'invitations');
+    }
+
     public function test_me_reports_the_role_and_the_grants(): void
     {
         [$owner, $guest, $team] = $this->household();
