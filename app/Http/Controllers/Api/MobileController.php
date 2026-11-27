@@ -775,7 +775,7 @@ class MobileController extends Controller
 
     // ── Budget Categories CRUD ──────────────────────────────────────
 
-    public function createBudgetCategory(Request $request): JsonResponse
+    public function createBudgetCategory(Request $request, BudgetCategoryService $categories): JsonResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -790,16 +790,7 @@ class MobileController extends Controller
             ->where('resource_type', 'transactions')
             ->findOrFail($validated['group_id']);
 
-        $maxIndex = $group->subCategories()->max('index') ?? 0;
-
-        $category = Category::create([
-            'name' => $validated['name'],
-            'team_id' => $teamId,
-            'resource_type' => 'transactions',
-            'parent_id' => $group->id,
-            'index' => $maxIndex + 1,
-            'depth' => 1,
-        ]);
+        $category = $categories->create($request->user(), $validated['name'], $group);
 
         return response()->json([
             'id' => $category->id,
