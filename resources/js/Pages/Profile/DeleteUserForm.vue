@@ -10,9 +10,9 @@
             </div>
 
             <div class="mt-5">
-                <JetDangerButton @click="confirmUserDeletion">
-                    {{ $t('Delete Account') }}
-                </JetDangerButton>
+                <LogerButton type="button" variant="ghost" class="!border-error/50 !text-error hover:!bg-error/10" @click="confirmUserDeletion">
+                    {{ $t('Delete my account') }}
+                </LogerButton>
             </div>
 
             <!-- Delete Account Confirmation Modal -->
@@ -55,6 +55,7 @@
     import JetInput from '@/Components/atoms/Input.vue'
     import JetInputError from '@/Components/atoms/InputError.vue'
     import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
+    import LogerButton from '@/Components/atoms/LogerButton.vue'
     import { useForm } from '@inertiajs/vue3'
 
     export default {
@@ -65,6 +66,7 @@
             JetInput,
             JetInputError,
             JetSecondaryButton,
+            LogerButton,
         },
 
         data() {

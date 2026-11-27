@@ -4,6 +4,8 @@
 
     import ActionSection from '@/Components/atoms/ActionSection.vue'
     import LogerButton from "@/Components/atoms/LogerButton.vue";
+    import LogerInput from '@/Components/atoms/LogerInput.vue'
+    import { AtField } from 'atmosphere-ui'
     import JetConfirmsPassword from '@/Components/atoms/ConfirmsPassword.vue'
 
 
@@ -103,46 +105,44 @@
         }
     });
     const titleLabel = computed(() => {
-        return isTwoFactorEnabled.value ? "You have enabled two factor authentication." : " You have not enabled two factor authentication."
+        return isTwoFactorEnabled.value ? "Two-step verification is on." : "Two-step verification is off."
     })
 </script>
 
 
 <template>
     <ActionSection
-        :title="$t('Two Factor Authentication')"
-        :description="$t('Add an extra layer of security to your account.')"
+        :title="$t('How it works')"
+        :description="$t('Besides your password, Loger asks for a 6-digit code from your phone when you sign in on a new device.')"
 
     >
         <template #content>
             <h3 v-if="isTwoFactorEnabled && state.confirming" class="text-lg font-medium text-body">
-                Finish enabling two factor authentication.
+                {{ $t('Finish turning on two-step verification.') }}
             </h3>
             <h3 class="text-lg font-medium" v-else>
-                {{ titleLabel }}
+                {{ $t(titleLabel) }}
             </h3>
 
             <div class="max-w-xl mt-3 text-sm text-body-1">
-                <p>
-                    When two factor authentication is enabled, you will be prompted for a secure, random token during authentication. You may retrieve this token from your phone's Google Authenticator application.
-                </p>
+                <p>{{ $t('You will need an authenticator app such as Google Authenticator or 1Password.') }}</p>
             </div>
 
             <div v-if="isTwoFactorEnabled">
                 <section v-if="state.qrCode">
                     <div class="max-w-xl mt-4 text-sm text-body-1">
-                        <p v-if="confirming" class="font-semibold">
-                            To finish enabling two factor authentication, scan the following QR code using your phone's authenticator application or enter the setup key and provide the generated OTP code.
+                        <p v-if="state.confirming" class="font-semibold">
+                            {{ $t('Scan this code with your authenticator app, then type the code it shows.') }}
                         </p>
                         <p v-else class="font-semibold">
-                            Two factor authentication is now enabled. Scan the following QR code using your phone's authenticator application.
+                            {{ $t('Two-step verification is on. Scan this code with your authenticator app.') }}
                         </p>
                     </div>
 
                     <div class="mt-4 dark:p-4 dark:w-56 dark:bg-base-lvl-1" v-html="state.qrCode" />
 
-                    <div v-if="confirming" class="mt-4">
-                        <AtField field="code" label="Code"
+                    <div v-if="state.confirming" class="mt-4">
+                        <AtField field="code" :label="$t('Code')"
                             :errors="confirmationForm.errors"
                         >
                             <LogerInput
@@ -157,13 +157,16 @@
                                 @keyup.enter="confirmTwoFactorAuthentication"
                             />
                         </AtField>
+                        <LogerButton type="button" class="mt-3" :processing="confirmationForm.processing" @click="confirmTwoFactorAuthentication">
+                            {{ $t('Confirm') }}
+                        </LogerButton>
                     </div>
                 </section>
 
                 <div v-if="state.recoveryCodes.length > 0 && !state.confirming">
                     <div class="max-w-xl mt-4 text-sm text-body-1">
                         <p class="font-bold">
-                            Store these recovery codes in a secure password manager. They can be used to recover access to your account if your two factor authentication device is lost.
+                            {{ $t('Keep these recovery codes in a password manager. They get you back in if you lose your phone.') }}
                         </p>
                     </div>
 
@@ -179,7 +182,7 @@
                 <section v-if="!isTwoFactorEnabled">
                     <JetConfirmsPassword @confirmed="enableTwoFactorAuthentication">
                         <LogerButton type="button" :processing="state.enabling" variant="secondary">
-                            Enable
+                            {{ $t('Turn on') }}
                         </LogerButton>
                     </JetConfirmsPassword>
                 </section>
@@ -189,13 +192,13 @@
                         <JetConfirmsPassword @confirmed="regenerateRecoveryCodes">
                             <LogerButton class="mr-3" variant="neutral"
                                 v-if="state.recoveryCodes.length > 0">
-                                Regenerate Recovery Codes
+                                {{ $t('New recovery codes') }}
                             </LogerButton>
                         </JetConfirmsPassword>
 
                         <JetConfirmsPassword @confirmed="showRecoveryCodes">
                             <LogerButton class="mr-3" v-if="state.recoveryCodes.length === 0" variant="neutral">
-                                Show Recovery Codes
+                                {{ $t('Show recovery codes') }}
                             </LogerButton>
                         </JetConfirmsPassword>
 
@@ -204,7 +207,7 @@
                                 :processing="state.disabling"
                                 variant="error"
                             >
-                                Disable
+                                {{ $t('Turn off') }}
                             </LogerButton>
                         </JetConfirmsPassword>
                     </footer>
