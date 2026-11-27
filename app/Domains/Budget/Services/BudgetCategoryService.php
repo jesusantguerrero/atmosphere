@@ -8,6 +8,7 @@ use App\Domains\Budget\Models\BudgetDefaultCategory;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Transaction\Models\Transaction;
 use App\Helpers\RequestQueryHelper;
+use App\Models\User;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Support\Carbon;
@@ -19,6 +20,22 @@ use Insane\Journal\Models\Core\Category;
 class BudgetCategoryService
 {
     public function __construct() {}
+
+    /**
+     * A budget group when $group is null, otherwise a category placed last in that group.
+     * Callers check that $group is a transactions group of the user's current team.
+     */
+    public function create(User $user, string $name, ?Category $group = null): Category
+    {
+        $teamId = $user->current_team_id;
+
+        return Category::create([
+            'team_id' => $teamId, 'user_id' => $user->id,
+            'name' => trim($name), 'parent_id' => $group?->id,
+            'depth' => $group ? 1 : 0, 'resource_type' => 'transactions',
+            'index' => Category::where('team_id', $teamId)->where('parent_id', $group?->id)->max('index') + 1,
+        ]);
+    }
 
     public function getLastTransactionMonth($category)
     {

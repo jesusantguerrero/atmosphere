@@ -53,6 +53,7 @@ class ListAccountsAndCategoriesTool extends Tool
                 'id' => $category->id,
                 'name' => $category->name,
                 'group' => $category->group?->name,
+                'group_id' => $category->group?->id,
             ]);
 
         $profiles = LogerProfile::query()

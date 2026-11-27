@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Models\CategoryMerge;
+use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Budget\Services\CategoryMergeService;
 use App\Http\Requests\ManageCategoryRequest;
 use Illuminate\Http\JsonResponse;
@@ -39,19 +40,14 @@ class CategoryManagerController extends Controller
         ]);
     }
 
-    public function store(ManageCategoryRequest $request): JsonResponse
+    public function store(ManageCategoryRequest $request, BudgetCategoryService $categories): JsonResponse
     {
         $parent = $request->input('parent_id') ? Category::findOrFail($request->integer('parent_id')) : null;
         if ($parent) {
             $this->check($parent, $request);
             abort_unless($parent->resource_type === 'transactions' && ! $parent->parent_id, 422);
         }
-        $category = Category::create([
-            'team_id' => $request->user()->current_team_id, 'user_id' => $request->user()->id,
-            'name' => trim($request->string('name')->toString()), 'parent_id' => $parent?->id,
-            'depth' => $parent ? 1 : 0, 'resource_type' => 'transactions',
-            'index' => Category::where('team_id', $request->user()->current_team_id)->where('parent_id', $parent?->id)->max('index') + 1,
-        ]);
+        $category = $categories->create($request->user(), $request->string('name')->toString(), $parent);
 
         return response()->json(['id' => $category->id], 201);
     }
