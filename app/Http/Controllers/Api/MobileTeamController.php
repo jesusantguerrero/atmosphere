@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Actions\Jetstream\SyncGuestGrants;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Mobile\CreateHouseholdRequest;
 use App\Http\Requests\Mobile\InviteTeamMemberRequest;
 use App\Http\Requests\Mobile\SwitchCurrentTeamRequest;
 use App\Http\Requests\Mobile\UpdateGuestGrantsRequest;
@@ -12,10 +13,14 @@ use App\Http\Resources\Mobile\MobileUserResource;
 use App\Models\Team;
 use App\Models\TeamMemberGrant;
 use App\Models\User;
+use App\Notifications\GuestAccessRequested;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Jetstream\Actions\UpdateTeamMemberRole;
+use Laravel\Jetstream\Contracts\CreatesTeams;
 use Laravel\Jetstream\Contracts\InvitesTeamMembers;
 use Laravel\Jetstream\Contracts\RemovesTeamMembers;
 use Laravel\Jetstream\TeamInvitation;
@@ -126,6 +131,40 @@ class MobileTeamController extends Controller
         abort_unless($request->user()->switchTeam($team), 403);
 
         return response()->json(MobileUserResource::make($request->user()->refresh()));
+    }
+
+    /**
+     * POST /api/mobile/teams — a household of one's own (a guest elsewhere, say), made current.
+     */
+    public function store(CreateHouseholdRequest $request, CreatesTeams $creator): JsonResponse
+    {
+        $team = $creator->create($request->user(), ['name' => $request->validated('name')]);
+
+        return response()->json(['id' => $team->id, 'name' => $team->name], 201);
+    }
+
+    /**
+     * POST /api/mobile/team/access-request — a guest asks the owner and administrators to share
+     * something with them. Once an hour at most, so the button cannot become a doorbell.
+     */
+    public function requestAccess(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $team = $this->currentTeam($user);
+
+        abort_unless($user->isGuestOf($team), 422, __('Only a guest asks for access.'));
+
+        $key = "guest-access-request:{$team->id}:{$user->id}";
+        abort_if(RateLimiter::tooManyAttempts($key, 1), 429, __('You already asked. They will see it when they open Loger.'));
+        RateLimiter::hit($key, 3600);
+
+        $admins = $team->users->filter(fn (User $member) => $member->membership->role === 'admin');
+        Notification::send(
+            $admins->prepend($team->owner)->unique('id'),
+            new GuestAccessRequested($team->id, $user->id, $user->name, $team->name)
+        );
+
+        return response()->json(['success' => true]);
     }
 
     private function currentTeam(User $user): Team

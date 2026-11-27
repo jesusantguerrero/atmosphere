@@ -47,6 +47,7 @@ class GuardGuestAccess
         'current-team.update',
         'team-invitations.accept',
         'api.team-invitations.*',
+        'user.current',
         'mobile.me',
         'mobile.me.update',
         'mobile.me.password.*',
@@ -61,6 +62,8 @@ class GuardGuestAccess
         'mobile.account.delete',
         'mobile.team-invitations.*',
         'mobile.team.members',
+        'mobile.team.access-request',
+        'mobile.teams.store',
     ];
 
     public function handle(Request $request, Closure $next): Response

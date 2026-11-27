@@ -1639,5 +1639,11 @@
     "Turn off what you do not use. Nothing is deleted: it only hides from your menu.": "Apaga lo que no usas. No borra nada: solo lo esconde de tu menú.",
     "Verified email": "Verificado",
     "Guest access: you see what is shared": "Tienes acceso de invitado: ves lo compartido",
-    "Use a long password you do not use anywhere else.": "Usa una contraseña larga que no uses en ningún otro sitio."
+    "Use a long password you do not use anywhere else.": "Usa una contraseña larga que no uses en ningún otro sitio.",
+    "Give your household a name.": "Ponle un nombre a tu hogar.",
+    "Only a guest asks for access.": "Solo un invitado pide acceso.",
+    "You already asked. They will see it when they open Loger.": "Ya lo pediste. Lo verán cuando abran Loger.",
+    ":name asks to see something in :team. Choose which profiles to share.": ":name pide ver algo en :team. Elige qué perfiles compartirle.",
+    "Share profiles": "Compartir perfiles",
+    "Guests asking for access": "Invitados que piden acceso"
 }

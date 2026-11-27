@@ -46,6 +46,7 @@ class LogerNotification extends Notification
         'guest_weekly_digest' => 'Weekly summary of your profiles',
         'guest_event_changed' => 'Calendar changes this week',
         'guest_shopping_items_added' => 'New items on your shopping lists',
+        'guest_access_requested' => 'Guests asking for access',
     ];
 
     /**
