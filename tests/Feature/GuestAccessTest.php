@@ -9,8 +9,10 @@ use App\Http\Middleware\GuardGuestAccess;
 use App\Models\Team;
 use App\Models\TeamMemberGrant;
 use App\Models\User;
+use App\Notifications\GuestAccessRequested;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Route as RoutingRoute;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Laravel\Passport\Passport;
@@ -113,6 +115,44 @@ class GuestAccessTest extends TestCase
 
         Sanctum::actingAs($owner, ['*']);
         $this->getJson('/api/mobile/team/members')->assertOk()->assertJsonCount(1, 'invitations');
+    }
+
+    public function test_a_guest_loads_their_own_account_on_mobile(): void
+    {
+        [, $guest] = $this->household();
+
+        Sanctum::actingAs($guest, ['*']);
+        $this->getJson('/api/user')->assertOk()->assertJsonPath('id', $guest->id);
+    }
+
+    public function test_a_guest_starts_a_household_of_their_own_from_mobile(): void
+    {
+        [, $guest, $team] = $this->household();
+
+        Sanctum::actingAs($guest, ['*']);
+        $response = $this->postJson('/api/mobile/teams', ['name' => 'Casa de Caro'])->assertCreated();
+
+        $guest->refresh();
+        $this->assertSame($response->json('id'), $guest->current_team_id);
+        $this->assertTrue($guest->ownsTeam($guest->currentTeam));
+        $this->assertTrue($guest->belongsToTeam($team));
+        $this->postJson('/api/mobile/teams', ['name' => ''])->assertUnprocessable();
+    }
+
+    public function test_a_guest_asks_the_owner_for_access_once_an_hour(): void
+    {
+        Notification::fake();
+        [$owner, $guest] = $this->household();
+
+        Sanctum::actingAs($guest, ['*']);
+        $this->postJson('/api/mobile/team/access-request')->assertOk();
+        $this->postJson('/api/mobile/team/access-request')->assertTooManyRequests();
+
+        Notification::assertSentTo($owner, GuestAccessRequested::class);
+        Notification::assertNotSentTo($guest, GuestAccessRequested::class);
+
+        Sanctum::actingAs($owner, ['*']);
+        $this->postJson('/api/mobile/team/access-request')->assertUnprocessable();
     }
 
     public function test_me_reports_the_role_and_the_grants(): void

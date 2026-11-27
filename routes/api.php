@@ -40,7 +40,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
-    });
+    })->name('user.current');
     Route::get('/dashboard', DashboardApiController::class)->name('dashboards');
 });
 
@@ -92,7 +92,9 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocal
     Route::get('/me/brief', MobileBriefController::class)->name('me.brief');
 
     Route::put('/current-team', [MobileTeamController::class, 'switchCurrentTeam'])->name('current-team.update');
+    Route::post('/teams', [MobileTeamController::class, 'store'])->name('teams.store');
     Route::get('/team/members', [MobileTeamController::class, 'members'])->name('team.members');
+    Route::post('/team/access-request', [MobileTeamController::class, 'requestAccess'])->name('team.access-request');
     Route::post('/team/invitations', [MobileTeamController::class, 'invite'])->name('team.invitations.store');
     Route::delete('/team/invitations/{invitation}', [MobileTeamController::class, 'cancelInvitation'])->whereNumber('invitation')->name('team.invitations.destroy');
     Route::put('/team/members/{user}', [MobileTeamController::class, 'updateRole'])->whereNumber('user')->name('team.members.update');
