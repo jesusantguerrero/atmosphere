@@ -76,7 +76,8 @@ class GuardGuestAccess
             return $next($request);
         }
 
-        $access = $request->isMethodSafe() ? TeamMemberGrant::ACCESS_READ : TeamMemberGrant::ACCESS_WRITE;
+        // A shared profile's shopping list is worked like its shared link: seeing the profile is enough to tick, add and reset.
+        $access = $request->isMethodSafe() || $route->hasParameter('plan') ? TeamMemberGrant::ACCESS_READ : TeamMemberGrant::ACCESS_WRITE;
         $reached = $this->profilesReached($route, (int) $team->id);
         $granted = $user->grantedProfileIds($team, $access);
 
