@@ -85,6 +85,8 @@ class ProfileWorkspacePersistenceTest extends TestCase
         $this->assertCount(3, $snapshot['boards']);
         $this->assertCount(3, $snapshot['categories']);
         $this->assertCount(3, $snapshot['purchases']);
+        $this->assertNotNull($snapshot['purchases'][0]['list_id']);
+        $this->assertSame(Plan::find($snapshot['purchases'][0]['list_id'])->name, $snapshot['purchases'][0]['list']);
         $this->assertCount(2, $snapshot['occurrences']);
         $this->assertCount(0, $snapshot['transactions']);
         $this->assertEquals(0, $snapshot['categories']->sum('available'));

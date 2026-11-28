@@ -300,7 +300,7 @@ class ProfileWorkspaceService
                 'items' => $stage->items->where('team_id', $profile->team_id)->sortBy('order')->map(fn ($item) => $this->page($item, $plan->plan_type_name === PlanTypes::CHORES))->values(),
             ])->values(),
         ])->values();
-        $purchases = $plans->filter(fn ($plan) => $plan->plan_type_name === PlanTypes::SHOPPING_LIST)->flatMap(fn ($plan) => $plan->stages->flatMap(fn ($stage) => $stage->items->where('team_id', $profile->team_id)->map(fn ($item) => ['id' => $item->id, 'name' => $item->title, 'detail' => $this->page($item)['body'], 'done' => (bool) $item->is_done])))->values();
+        $purchases = $plans->filter(fn ($plan) => $plan->plan_type_name === PlanTypes::SHOPPING_LIST)->flatMap(fn ($plan) => $plan->stages->flatMap(fn ($stage) => $stage->items->where('team_id', $profile->team_id)->map(fn ($item) => ['id' => $item->id, 'name' => $item->title, 'detail' => $this->page($item)['body'], 'done' => (bool) $item->is_done, 'list_id' => $plan->id, 'list' => $plan->name])))->values();
         $occurrences = Occurrence::query()->where('team_id', $profile->team_id)->whereIn('id', $ids(Occurrence::class))->get()->map(fn ($item) => [
             'id' => $item->id, 'name' => $item->name, 'detail' => $item->last_date ? 'Último registro: '.$item->last_date->format('d/m/Y') : 'Sin registros todavía',
             'checked' => collect($item->log ?? [])->contains(fn ($date) => Carbon::parse($date)->isToday()),
