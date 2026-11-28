@@ -2257,7 +2257,7 @@ class MobileController extends Controller
 
         $data = $request->validated();
         $destination = isset($data['plan_id']) && (int) $data['plan_id'] !== $plan->id ? Plan::findOrFail($data['plan_id']) : $plan;
-        $guestListIds = $this->guestShoppingListIds($request, TeamMemberGrant::ACCESS_WRITE);
+        $guestListIds = $this->guestShoppingListIds($request);
         abort_if($guestListIds !== null && ! in_array($destination->id, $guestListIds, true), 403, __('This has not been shared with you.'));
 
         if (isset($data['stage_id']) || $destination->isNot($plan)) {

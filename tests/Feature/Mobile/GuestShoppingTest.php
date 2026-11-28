@@ -86,14 +86,23 @@ class GuestShoppingTest extends TestCase
         $this->assertSame($countBefore, Plan::count());
     }
 
-    public function test_a_guest_with_read_cannot_change_items(): void
+    public function test_a_guest_who_only_sees_the_profile_works_its_list_like_the_shared_link(): void
     {
         $item = $this->item($this->babyList, 'Pañales');
+        $houseItem = $this->item($this->houseList, 'Arroz');
         $this->grant(TeamMemberGrant::ACCESS_READ);
         Sanctum::actingAs($this->guest, ['*']);
 
-        $this->postJson($this->path($this->babyList, '/items'), ['title' => 'Toallitas'])->assertForbidden();
-        $this->postJson($this->path($this->babyList, '/items/'.$item->id.'/cycle'))->assertForbidden();
+        $added = $this->postJson($this->path($this->babyList, '/items'), ['title' => 'Toallitas'])->assertCreated()->json('id');
+        $this->patchJson($this->path($this->babyList, '/items/'.$added), ['title' => 'Toallitas húmedas'])->assertOk();
+        $this->postJson($this->path($this->babyList, '/items/'.$item->id.'/cycle'))->assertOk()->assertJsonPath('state', PlanItem::STATE_BUY);
+        $this->postJson($this->path($this->babyList, '/reset'))->assertOk();
+
+        $this->patchJson($this->path($this->babyList, '/items/'.$item->id), ['plan_id' => $this->houseList->id])->assertForbidden();
+        $this->postJson($this->path($this->houseList, '/items/'.$houseItem->id.'/cycle'))->assertForbidden();
+        $this->putJson($this->path($this->babyList), ['name' => 'Otra'])->assertForbidden();
+        $this->postJson($this->path($this->babyList, '/sessions/start'))->assertForbidden();
+        $this->assertSame($this->babyList->id, (int) $item->fresh()->plan_id);
     }
 
     public function test_a_guest_with_write_works_the_items_of_her_list(): void
