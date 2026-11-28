@@ -89,6 +89,22 @@ class MobileProfileTest extends TestCase
         $this->assertNotNull($this->user->fresh()->profile_photo_path);
     }
 
+    public function test_a_phone_sized_photo_is_accepted_and_a_huge_one_is_not(): void
+    {
+        Storage::fake('public');
+        $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==');
+
+        $this->authed()->post('/api/mobile/me', [
+            '_method' => 'PATCH',
+            'photo' => UploadedFile::fake()->createWithContent('phone.png', $png.str_repeat('a', 5 * 1024 * 1024)),
+        ], ['Accept' => 'application/json'])->assertOk();
+
+        $this->authed()->post('/api/mobile/me', [
+            '_method' => 'PATCH',
+            'photo' => UploadedFile::fake()->createWithContent('huge.png', $png.str_repeat('a', 9 * 1024 * 1024)),
+        ], ['Accept' => 'application/json'])->assertStatus(422)->assertJsonValidationErrors('photo');
+    }
+
     public function test_profile_photo_must_be_an_image(): void
     {
         $this->authed()->post('/api/mobile/me', [
