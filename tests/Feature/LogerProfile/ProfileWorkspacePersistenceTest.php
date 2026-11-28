@@ -11,7 +11,9 @@ use App\Models\User;
 use Database\Seeders\ProfileWorkspaceDemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
+use Modules\Plan\Entities\Plan;
 use Modules\Plan\Entities\PlanItem;
+use Modules\Plan\Entities\PlanTypes;
 use Tests\TestCase;
 
 class ProfileWorkspacePersistenceTest extends TestCase
@@ -125,6 +127,21 @@ class ProfileWorkspacePersistenceTest extends TestCase
         $this->assertDatabaseHas('transaction_lines', ['id' => $line->id, 'category_id' => $categoryId]);
         $this->assertDatabaseHas('categories', ['id' => $categoryId]);
         $this->assertDatabaseHas('plans', ['id' => $snapshot['boards'][0]['id']]);
+    }
+
+    public function test_link_options_say_which_tab_they_feed_and_name_shopping_lists(): void
+    {
+        $list = (new Plan)->forceFill(['team_id' => 980001, 'user_id' => 980001, 'name' => 'Diana', 'plan_type_name' => PlanTypes::SHOPPING_LIST]);
+        $list->save();
+        $board = (new Plan)->forceFill(['team_id' => 980001, 'user_id' => 980001, 'name' => 'Salud', 'plan_type_name' => PlanTypes::CUSTOM]);
+        $board->save();
+        $occurrence = Occurrence::withoutEvents(fn () => Occurrence::create(['team_id' => 980001, 'user_id' => 980001, 'name' => 'Vitaminas', 'last_date' => '2026-10-01', 'log' => []]));
+
+        $options = collect(app(ProfileWorkspaceService::class)->snapshot($this->profile)['availableLinks'])->keyBy('key');
+
+        $this->assertSame(['label' => 'Lista de compras', 'section' => 'shopping'], collect($options->get('plan:'.$list->id))->only(['label', 'section'])->all());
+        $this->assertSame(['label' => 'Tablero o lista', 'section' => 'boards'], collect($options->get('plan:'.$board->id))->only(['label', 'section'])->all());
+        $this->assertSame('tracking', $options->get('occurrence:'.$occurrence->id)['section']);
     }
 
     public function test_notebooks_persist_under_their_folder_and_pages_stay_in_their_notebook(): void

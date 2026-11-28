@@ -328,8 +328,10 @@ class ProfileWorkspaceService
                 $query->where('resource_type', 'transactions')->whereNotIn('display_id', ['ready_to_assign', 'inflow', 'credit_card_payments']);
             }
             foreach ($query->orderBy('id')->get() as $entity) {
+                $isShoppingList = $type === 'plan' && $entity->plan_type_name === PlanTypes::SHOPPING_LIST;
                 $options[] = ['key' => $type.':'.$entity->id, 'type' => $type, 'id' => $entity->id, 'name' => $entity->name ?? $entity->title,
-                    'label' => $type === 'category' && ! $entity->parent_id ? 'Grupo de categorías' : ['category' => 'Categoría', 'plan' => 'Tablero o lista', 'occurrence' => 'Seguimiento', 'task' => 'Elemento de Plan', 'account' => 'Cuenta'][$type],
+                    'label' => $isShoppingList ? 'Lista de compras' : ($type === 'category' && ! $entity->parent_id ? 'Grupo de categorías' : ['category' => 'Categoría', 'plan' => 'Tablero o lista', 'occurrence' => 'Seguimiento', 'task' => 'Elemento de Plan', 'account' => 'Cuenta'][$type]),
+                    'section' => $isShoppingList ? 'shopping' : ['category' => 'finance', 'account' => 'finance', 'occurrence' => 'tracking', 'plan' => 'boards', 'task' => 'boards'][$type],
                     'linked' => $links->contains(fn ($link) => $link->entity_type === $class && (int) $link->entity_id === (int) $entity->id),
                 ];
             }
